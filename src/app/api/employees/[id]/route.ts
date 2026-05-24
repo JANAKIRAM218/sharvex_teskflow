@@ -48,29 +48,42 @@ export async function PUT(
 ) {
   try {
     const user = getAuthUser(request);
-    if (!user || user.role !== 'admin') {
-      return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
     const body = await request.json();
-    const { fullName, department, designation, profileImage, status, performanceScore } = body;
+    const { fullName, department, designation, profileImage, status, performanceScore, password } = body;
+
+    // If the user is an employee, they can only update their own profile
+    if (user.role === 'employee') {
+      if (user.id !== id) {
+        return NextResponse.json({ error: 'Unauthorized - Can only update your own profile' }, { status: 403 });
+      }
+    }
 
     const existing = await db.employee.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
+    // Build update data - employees can only update certain fields
+    const updateData: Record<string, unknown> = {};
+    if (fullName !== undefined && user.role === 'admin') updateData.fullName = fullName;
+    if (department !== undefined && user.role === 'admin') updateData.department = department;
+    if (designation !== undefined) updateData.designation = designation;
+    if (profileImage !== undefined) updateData.profileImage = profileImage;
+    if (status !== undefined && user.role === 'admin') updateData.status = status;
+    if (performanceScore !== undefined && user.role === 'admin') updateData.performanceScore = performanceScore;
+    if (password && typeof password === 'string' && password.length >= 6) {
+      const { hashPassword } = await import('@/lib/auth');
+      updateData.password = await hashPassword(password);
+    }
+
     const employee = await db.employee.update({
       where: { id },
-      data: {
-        ...(fullName !== undefined && { fullName }),
-        ...(department !== undefined && { department }),
-        ...(designation !== undefined && { designation }),
-        ...(profileImage !== undefined && { profileImage }),
-        ...(status !== undefined && { status }),
-        ...(performanceScore !== undefined && { performanceScore }),
-      },
+      data: updateData,
     });
 
     const { password: _password, ...employeeData } = employee;

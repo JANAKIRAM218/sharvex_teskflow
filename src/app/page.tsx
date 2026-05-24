@@ -7,6 +7,7 @@ import {
   Bell, Settings, LogOut, Zap, Menu, X, ChevronRight,
   ListTodo, Calendar, UserCircle, HomeIcon, Search
 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
 import LoginPage from '@/components/auth/LoginPage';
@@ -26,9 +27,10 @@ import CalendarPage from '@/components/employee/Calendar';
 import EmployeeNotifications from '@/components/employee/EmployeeNotifications';
 import Profile from '@/components/employee/Profile';
 import EmployeeSettings from '@/components/employee/EmployeeSettings';
+import WorkUploads from '@/components/employee/WorkUploads';
 
 type AdminPage = 'dashboard' | 'employees' | 'tasks' | 'analytics' | 'notifications' | 'settings';
-type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings';
+type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings' | 'work-uploads';
 
 const ADMIN_NAV: { id: AdminPage; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -43,6 +45,7 @@ const EMPLOYEE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'my-tasks', label: 'My Tasks', icon: ListTodo },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'work-uploads', label: 'Work Uploads', icon: Zap },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'profile', label: 'Profile', icon: UserCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -52,7 +55,7 @@ const EMPLOYEE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType
 const EMPLOYEE_MOBILE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'dashboard', label: 'Home', icon: HomeIcon },
   { id: 'my-tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'work-uploads', label: 'Uploads', icon: Zap },
   { id: 'notifications', label: 'Alerts', icon: Bell },
   { id: 'profile', label: 'Profile', icon: UserCircle },
 ];
@@ -87,9 +90,7 @@ function AppSidebar() {
       >
         {/* Logo section */}
         <div className="flex items-center h-14 sm:h-16 px-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center shrink-0">
-            <Zap className="w-5 h-5 text-[#0B0F19]" />
-          </div>
+          <Image src="/logo.png" alt="Sharvex TaskFlow" width={36} height={36} className="w-9 h-9 rounded-xl shrink-0" />
           <AnimatePresence>
             {sidebarOpen && (
               <motion.div
@@ -100,10 +101,7 @@ function AppSidebar() {
                 className="flex items-center gap-2 overflow-hidden ml-3"
               >
                 <span className="text-lg font-bold bg-gradient-to-r from-[#00FFB2] to-[#00E5FF] bg-clip-text text-transparent whitespace-nowrap">
-                  TaskFlow
-                </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[rgba(0,255,178,0.15)] text-[#00FFB2] font-medium whitespace-nowrap">
-                  PRO
+                  Sharvex TaskFlow
                 </span>
               </motion.div>
             )}
@@ -229,7 +227,7 @@ function AppNavbar() {
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
           onClick={() => setSidebarOpen(true)}
-          className="p-2 rounded-xl hover:bg-[rgba(255,255,255,0.05)] text-[#94A3B8] hover:text-[#E5E7EB] transition-colors shrink-0"
+          className="p-2 rounded-xl hover:bg-[rgba(255,255,255,0.05)] text-[#94A3B8] hover:text-[#E5E7EB] transition-colors shrink-0 lg:hidden"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
@@ -255,8 +253,8 @@ function AppNavbar() {
           <span>Search...</span>
           <kbd className="px-1.5 py-0.5 rounded bg-[rgba(255,255,255,0.06)] text-[10px] font-mono">⌘K</kbd>
         </div>
-        <span className="text-xs text-[#94A3B8] hidden md:block">
-          Welcome, <span className="text-[#00FFB2] font-medium">{user?.name || 'User'}</span>
+        <span className="text-xs text-[#94A3B8] hidden sm:block">
+          Hi, <span className="text-[#00FFB2] font-medium">{user?.name || 'User'}</span>
         </span>
         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center text-[#0B0F19] text-xs sm:text-sm font-bold shadow-[0_0_15px_rgba(0,255,178,0.2)]">
           {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -329,6 +327,7 @@ function EmployeePortal() {
     case 'notifications': return <EmployeeNotifications />;
     case 'profile': return <Profile />;
     case 'settings': return <EmployeeSettings />;
+    case 'work-uploads': return <WorkUploads />;
     default: return <EmployeeDashboard />;
   }
 }
@@ -374,7 +373,7 @@ export default function Home() {
   useEffect(() => {
     if (isAuthenticated && user) {
       const validAdminPages = ['dashboard', 'employees', 'tasks', 'analytics', 'notifications', 'settings'];
-      const validEmployeePages = ['dashboard', 'my-tasks', 'calendar', 'notifications', 'profile', 'settings'];
+      const validEmployeePages = ['dashboard', 'my-tasks', 'calendar', 'notifications', 'profile', 'settings', 'work-uploads'];
       const current = useAppStore.getState().currentPage;
       const validPages = user.role === 'admin' ? validAdminPages : validEmployeePages;
       if (!validPages.includes(current)) {
@@ -414,7 +413,7 @@ export default function Home() {
         {/* Footer - desktop only */}
         <footer className="hidden lg:block px-6 py-4 border-t border-[rgba(255,255,255,0.06)] text-center mt-auto">
           <p className="text-xs text-[#94A3B8]">
-            © 2024 TaskFlow PRO — Employee Task Management Platform. Built with{' '}
+            © 2024 Sharvex TaskFlow — Employee Task Management Platform. Built with{' '}
             <span className="text-[#00FFB2]">♥</span> for productivity.
           </p>
         </footer>

@@ -12,6 +12,7 @@ import {
   ArrowRight,
   Activity,
   Zap,
+  Upload,
 } from 'lucide-react';
 import {
   LineChart,
@@ -515,6 +516,48 @@ export default function EmployeeDashboard() {
               </div>
             ))
           )}
+        </div>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <motion.div variants={itemVariants} className="glass-card p-6">
+        <h2 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2 mb-4">
+          <Zap className="size-5 text-[#00E5FF]" />
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button
+            onClick={() => setCurrentPage('my-tasks')}
+            className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
+            style={{ background: 'rgba(0,255,178,0.05)', border: '1px solid rgba(0,255,178,0.15)' }}
+          >
+            <ListTodo className="size-6 text-[#00FFB2] mx-auto mb-2" />
+            <p className="text-xs font-medium text-[#E5E7EB]">My Tasks</p>
+          </button>
+          <button
+            onClick={() => setCurrentPage('work-uploads')}
+            className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
+            style={{ background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)' }}
+          >
+            <Upload className="size-6 text-[#00E5FF] mx-auto mb-2" />
+            <p className="text-xs font-medium text-[#E5E7EB]">Upload Work</p>
+          </button>
+          <button
+            onClick={() => setCurrentPage('calendar')}
+            className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
+            style={{ background: 'rgba(167,139,250,0.05)', border: '1px solid rgba(167,139,250,0.15)' }}
+          >
+            <Clock className="size-6 text-[#A78BFA] mx-auto mb-2" />
+            <p className="text-xs font-medium text-[#E5E7EB]">Calendar</p>
+          </button>
+          <button
+            onClick={() => setCurrentPage('profile')}
+            className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
+            style={{ background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.15)' }}
+          >
+            <TrendingUp className="size-6 text-[#F59E0B] mx-auto mb-2" />
+            <p className="text-xs font-medium text-[#E5E7EB]">My Profile</p>
+          </button>
         </div>
       </motion.div>
     </motion.div>

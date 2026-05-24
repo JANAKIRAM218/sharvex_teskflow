@@ -5,17 +5,17 @@ import { hashPassword, generateEmployeeCode, generateUsername, generateDefaultPa
 export async function POST() {
   try {
     // Check if admin already exists
-    const existingAdmin = await db.admin.findFirst({ where: { email: 'admin@taskplatform.com' } });
+    const existingAdmin = await db.admin.findFirst({ where: { email: 'keerthanjakkaraju@gmail.com' } });
     if (existingAdmin) {
       return NextResponse.json({ message: 'Database already seeded' }, { status: 400 });
     }
 
     // Create default admin
-    const hashedAdminPassword = await hashPassword('admin123');
+    const hashedAdminPassword = await hashPassword('keerthan@sharvex');
     const admin = await db.admin.create({
       data: {
-        name: 'Admin User',
-        email: 'admin@taskplatform.com',
+        name: 'Keerthan Jakkaraju',
+        email: 'keerthanjakkaraju@gmail.com',
         password: hashedAdminPassword,
         role: 'admin',
       },
@@ -25,19 +25,19 @@ export async function POST() {
     const employeeCount = await db.employee.count();
     const sampleEmployees = [
       {
-        fullName: 'Alice Johnson',
+        fullName: 'Jashwanth Kumar',
         department: 'Engineering',
         designation: 'Senior Developer',
         performanceScore: 85,
       },
       {
-        fullName: 'Bob Smith',
+        fullName: 'Hemanth Reddy',
         department: 'Design',
         designation: 'UI/UX Designer',
         performanceScore: 78,
       },
       {
-        fullName: 'Carol Williams',
+        fullName: 'Janakiram Sharma',
         department: 'Marketing',
         designation: 'Marketing Manager',
         performanceScore: 92,
@@ -45,7 +45,7 @@ export async function POST() {
     ];
 
     // Use predictable passwords for demo
-    const demoPasswords = ['alice123', 'bob12345', 'carol123'];
+    const demoPasswords = ['jashwanth123', 'hemanth123', 'janakiram123'];
     const createdEmployees = [];
     for (let i = 0; i < sampleEmployees.length; i++) {
       const emp = sampleEmployees[i];

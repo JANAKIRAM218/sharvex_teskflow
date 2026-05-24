@@ -1,122 +1,82 @@
 ---
 Task ID: 1
-Agent: Main Coordinator
-Task: Plan architecture and set up database schema with Prisma
+Agent: Main
+Task: Update admin credentials, app name, and logo for Sharvex TaskFlow
 
 Work Log:
-- Analyzed project requirements and planned architecture
-- Created Prisma schema with Admin, Employee, Task, Comment, Attachment, Notification, Attendance, ChatMessage models
-- Pushed schema to SQLite database
-- Installed bcryptjs, jsonwebtoken, socket.io, socket.io-client, multer
+- Updated admin credentials to keerthanjakkaraju@gmail.com / keerthan@sharvex
+- Changed app name from "TaskFlow PRO" to "Sharvex TaskFlow" in sidebar, login page, and footer
+- Copied uploaded logo image to public/logo.png
+- Updated sidebar and login page to use Image component with logo.png
 
 Stage Summary:
-- Database schema defined and synced
-- All necessary packages installed
+- Admin credentials updated and working
+- App name updated everywhere
+- Logo image integrated into sidebar and login page
+
 ---
 Task ID: 2
-Agent: Backend API Builder
-Task: Build all API routes
+Agent: Main
+Task: Fix employee welcome name showing "user" instead of actual name
 
 Work Log:
-- Created 13 API route files for auth, employees, tasks, notifications, analytics, attendance, chat, upload, and seed
-- Implemented JWT authentication middleware
-- Created role-based access control
-- Auto-notification on task events
-- Pagination on all list endpoints
+- Fixed employee-login API to return `name` instead of `fullName` in user object
+- The authStore expects `name` field but employee login was returning `fullName`
+- This caused user?.name to be undefined, showing "Welcome user" instead of actual name
 
 Stage Summary:
-- All backend API routes complete and functional
-- Admin login, Employee login, CRUD for employees and tasks
-- Analytics, notifications, attendance, chat, and file upload endpoints
+- Employee login now returns `name: employee.fullName` correctly
+- Dashboard shows "Welcome back, Jashwanth Kumar" etc.
+
 ---
 Task ID: 3
-Agent: Socket.io Service Builder
-Task: Build Socket.io mini-service
+Agent: Main
+Task: Fix employee password change and add work upload feature
 
 Work Log:
-- Created independent bun project at mini-services/chat-service
-- Socket.io server on port 3003
-- Handles join-room, send-message, task-assigned, task-updated, notification, typing, stop-typing events
+- Updated employees/[id] PUT endpoint to allow employees to update their own profile
+- Employees can now change their password via the PUT endpoint
+- Added password hashing when password field is provided
+- Created WorkUpload Prisma model for employee file uploads
+- Created /api/upload route for general file uploads
+- Created /api/work-uploads route with GET (list) and POST (create) endpoints
+- Created /api/work-uploads/[id] DELETE endpoint
+- Created WorkUploads component with full upload UI (categories, task linking, file preview)
+- Added WorkUploads to employee navigation (sidebar + mobile bottom nav)
+- Added Quick Actions section to EmployeeDashboard with shortcuts
 
 Stage Summary:
-- Socket.io service running on port 3003
+- Employee password change now works via Profile and Settings pages
+- Work Upload feature with categories (General, Screenshot, Document, Report, Assignment)
+- Files can be linked to tasks
+- Image previews shown for image uploads
+
 ---
 Task ID: 4
-Agent: UI Component Builder
-Task: Build layout and shared UI components
+Agent: Main
+Task: Fix employee portal UI and navbar responsiveness
 
 Work Log:
-- Created Sidebar, Navbar, AppLayout layout components
-- Created GlassCard, GlowButton, StatusBadge, AnimatedModal, ProgressChart, LoadingSkeleton, EmptyState shared components
-- Created api.ts utility with typed API functions
+- Made hamburger menu button hidden on desktop (lg:hidden) since sidebar is always visible
+- Changed welcome text to show on sm+ screens instead of md+
+- Shortened welcome text from "Welcome," to "Hi," for better mobile fit
+- Updated sample employees to use Indian names (Jashwanth Kumar, Hemanth Reddy, Janakiram Sharma)
 
 Stage Summary:
-- All shared components and API client ready
----
-Task ID: 5-6
-Agent: Auth and Admin Page Builder
-Task: Build auth pages and admin portal
-
-Work Log:
-- Created LoginPage with dual-tab admin/employee login
-- Created AdminDashboard with KPI cards, charts, activity feed
-- Created EmployeeManagement with search, filters, CRUD
-- Created TaskManagement with Kanban board and drag-and-drop
-- Created Analytics with charts and rankings
-- Created AdminNotifications and AdminSettings
-
-Stage Summary:
-- Full admin portal with all pages
----
-Task ID: 7
-Agent: Employee Portal Builder
-Task: Build employee portal pages
-
-Work Log:
-- Created EmployeeDashboard with stats, clock in/out
-- Created MyTasks with filter tabs and detail modal
-- Created Calendar with task deadline markers
-- Created EmployeeNotifications, Profile, EmployeeSettings
-
-Stage Summary:
-- Full employee portal with all pages
----
-Task ID: 8-9
-Agent: AI and Chat Builder
-Task: Add AI insights and team chat
-
-Work Log:
-- Created AI Insights API at /api/ai/insights with LLM-powered analysis
-- Created AIInsightsPanel component with stagger animations
-- Created TeamChat component with Socket.io real-time messaging
-- Updated AdminDashboard to include both components
-
-Stage Summary:
-- AI productivity insights feature complete
-- Team chat with real-time messaging complete
+- Navbar properly responsive on all screen sizes
+- Employee names display correctly in welcome messages
 
 ---
-Task ID: 1
-Agent: Main Agent
-Task: Fix employee portal UI issues - department select, calendar, navbar responsiveness
+Task ID: 5
+Agent: Main
+Task: Re-seed database with new credentials
 
 Work Log:
-- Analyzed uploaded screenshot with VLM to identify visual issues
-- Identified 3 main issues: department dropdown styling, missing calendar picker, navbar not responsive
-- Replaced all native <select> elements in EmployeeManagement.tsx with shadcn/ui Select components
-- Added Popover + Calendar date picker for Joining Date field in Add Employee modal
-- Replaced all native <select> elements in TaskManagement.tsx with shadcn/ui Select components
-- Added Popover + Calendar date picker for Deadline field in Create Task modal
-- Improved AppNavbar component with better responsive layout and icon indicators
-- Added safe-area-bottom padding for iOS devices
-- Added CSS fallback styling for native select options (dark background)
-- Added date input webkit calendar picker indicator styling
-- Added Radix component z-index fixes for modals
-- Fixed ESLint warning (unused eslint-disable directive)
-- All lint checks pass, dev server running correctly
+- Deleted old database and re-seeded with new admin credentials
+- Admin: keerthanjakkaraju@gmail.com / keerthan@sharvex
+- Employee 1: Jashwanth Kumar (jashwa34 / EMP1001 / jashwanth123)
+- Employee 2: Hemanth Reddy (hemant33 / EMP1002 / hemanth123)
+- Employee 3: Janakiram Sharma (janaki90 / EMP1003 / janakiram123)
 
 Stage Summary:
-- All native <select> dropdowns replaced with shadcn/ui Select (proper dark theme)
-- All date inputs replaced with Popover + Calendar date pickers
-- Employee portal navbar fully responsive with mobile bottom nav
-- CSS improvements for dark theme compatibility
+- Database fully seeded with new credentials and employee names

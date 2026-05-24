@@ -33,6 +33,7 @@ model Employee {
   updatedAt        DateTime @updatedAt
   assignedTasks    Task[]
   attendance       Attendance[]
+  workUploads      WorkUpload[]
 }
 
 model Task {
@@ -119,4 +120,22 @@ model ChatMessage {
   createdAt  DateTime @default(now())
 
   @@index([roomId])
+}
+
+model WorkUpload {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  taskId      String?
+  title       String
+  description String?
+  fileUrl     String
+  fileName    String
+  fileType    String
+  fileSize    Int      @default(0)
+  category    String   @default("general")
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([taskId])
 }

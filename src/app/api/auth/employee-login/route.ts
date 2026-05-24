@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       token,
       user: {
         id: employee.id,
-        fullName: employee.fullName,
+        name: employee.fullName,
         username: employee.username,
         employeeCode: employee.employeeCode,
         role: 'employee',

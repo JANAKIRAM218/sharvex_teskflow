@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, User, Hash, Zap, Shield, Eye, EyeOff, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
 import { toast } from 'sonner';
@@ -89,7 +90,7 @@ export default function LoginPage() {
       const res = await fetch('/api/seed', { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        toast.success('Database seeded! Admin: admin@taskplatform.com / admin123');
+        toast.success('Database seeded! Admin: keerthanjakkaraju@gmail.com / keerthan@sharvex');
       } else {
         toast.info(data.message || 'Database already seeded');
       }
@@ -137,11 +138,9 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] mb-4 neon-glow">
-            <Zap className="w-8 h-8 text-[#0B0F19]" />
-          </div>
+          <Image src="/logo.png" alt="Sharvex TaskFlow" width={64} height={64} className="w-16 h-16 rounded-2xl mb-4 neon-glow" />
           <h1 className="text-3xl font-bold bg-gradient-to-r from-[#00FFB2] to-[#00E5FF] bg-clip-text text-transparent">
-            TaskFlow
+            Sharvex TaskFlow
           </h1>
           <p className="text-[#94A3B8] mt-1 text-sm">Employee Task Management Platform</p>
         </motion.div>
@@ -193,7 +192,7 @@ export default function LoginPage() {
                       type="email"
                       value={adminEmail}
                       onChange={(e) => setAdminEmail(e.target.value)}
-                      placeholder="admin@taskplatform.com"
+                      placeholder="keerthanjakkaraju@gmail.com"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] placeholder-[#94A3B8]/50 focus:outline-none focus:border-[rgba(0,255,178,0.5)] focus:ring-2 focus:ring-[rgba(0,255,178,0.15)] transition-all text-sm"
                     />
                   </div>
