@@ -277,11 +277,11 @@ export default function MyTasks() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48 bg-dark-card" />
-        <Skeleton className="h-10 w-80 bg-dark-card" />
+        <Skeleton className="h-10 w-48" style={{ background: 'rgba(255,255,255,0.05)' }} />
+        <Skeleton className="h-10 w-80" style={{ background: 'rgba(255,255,255,0.05)' }} />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="h-48 rounded-2xl bg-dark-card" />
+            <Skeleton key={i} className="h-48 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
           ))}
         </div>
       </div>
@@ -292,24 +292,24 @@ export default function MyTasks() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-          <ListTodo className="size-7 text-neon" />
+        <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB] flex items-center gap-2">
+          <ListTodo className="size-7 text-[#00FFB2]" />
           My Tasks
         </h1>
-        <p className="text-muted-foreground mt-1">Manage and track your assigned tasks</p>
+        <p className="text-[#94A3B8] mt-1">Manage and track your assigned tasks</p>
       </div>
 
       {/* Filter Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-dark-card border border-dark-border">
-          <TabsTrigger value="all" className="data-[state=active]:text-neon">All ({tasks.length})</TabsTrigger>
+        <TabsList className="bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)]">
+          <TabsTrigger value="all" className="data-[state=active]:text-[#00FFB2]">All ({tasks.length})</TabsTrigger>
           <TabsTrigger value="pending" className="data-[state=active]:text-yellow-400">
             Pending ({tasks.filter((t) => t.status === 'pending').length})
           </TabsTrigger>
-          <TabsTrigger value="in-progress" className="data-[state=active]:text-cyan">
+          <TabsTrigger value="in-progress" className="data-[state=active]:text-[#00E5FF]">
             In Progress ({tasks.filter((t) => t.status === 'in-progress').length})
           </TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:text-neon">
+          <TabsTrigger value="completed" className="data-[state=active]:text-[#00FFB2]">
             Completed ({tasks.filter((t) => t.status === 'completed').length})
           </TabsTrigger>
         </TabsList>
@@ -321,9 +321,9 @@ export default function MyTasks() {
               animate={{ opacity: 1, scale: 1 }}
               className="glass-card p-12 text-center"
             >
-              <ListTodo className="size-16 text-muted-foreground mx-auto mb-4 opacity-30" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No tasks found</h3>
-              <p className="text-muted-foreground">
+              <ListTodo className="size-16 text-[#94A3B8] mx-auto mb-4 opacity-30" />
+              <h3 className="text-lg font-medium text-[#E5E7EB] mb-2">No tasks found</h3>
+              <p className="text-[#94A3B8]">
                 {activeTab === 'all'
                   ? 'You have no tasks assigned yet.'
                   : `No ${activeTab.replace('-', ' ')} tasks at the moment.`}
@@ -359,7 +359,7 @@ export default function MyTasks() {
 
                     <div className="pl-2">
                       <div className="flex items-start justify-between gap-2 mb-3">
-                        <h3 className="text-sm font-semibold text-foreground line-clamp-2 flex-1">
+                        <h3 className="text-sm font-semibold text-[#E5E7EB] line-clamp-2 flex-1">
                           {task.title}
                         </h3>
                         <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
@@ -368,7 +368,7 @@ export default function MyTasks() {
                       </div>
 
                       {task.description && (
-                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{task.description}</p>
+                        <p className="text-xs text-[#94A3B8] mb-3 line-clamp-2">{task.description}</p>
                       )}
 
                       <div className="flex items-center gap-2 mb-3">
@@ -376,7 +376,7 @@ export default function MyTasks() {
                           {task.priority}
                         </span>
                         {task.deadline && (
-                          <span className={`flex items-center gap-1 text-xs ${isOverdue ? 'text-red-400' : isUrgent ? 'text-yellow-400' : 'text-muted-foreground'}`}>
+                          <span className={`flex items-center gap-1 text-xs ${isOverdue ? 'text-red-400' : isUrgent ? 'text-yellow-400' : 'text-[#94A3B8]'}`}>
                             {isOverdue ? <AlertTriangle className="size-3" /> : <Calendar className="size-3" />}
                             {isOverdue ? `${Math.abs(daysLeft!)}d overdue` : isUrgent ? `${daysLeft}d left` : new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </span>
@@ -386,8 +386,8 @@ export default function MyTasks() {
                       {/* Progress */}
                       <div className="mt-3">
                         <div className="flex items-center justify-between text-xs mb-1.5">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className="text-foreground font-medium">{task.progress}%</span>
+                          <span className="text-[#94A3B8]">Progress</span>
+                          <span className="text-[#E5E7EB] font-medium">{task.progress}%</span>
                         </div>
                         <Progress value={task.progress} className="h-1.5" />
                       </div>
@@ -402,17 +402,17 @@ export default function MyTasks() {
 
       {/* Task Detail Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0B0F19] border-dark-border">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0B0F19] border-[rgba(255,255,255,0.08)]">
           {selectedTask && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-xl text-foreground flex items-center gap-3">
+                <DialogTitle className="text-xl text-[#E5E7EB] flex items-center gap-3">
                   {selectedTask.title}
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(selectedTask.status)}`}>
                     {selectedTask.status.replace('-', ' ')}
                   </span>
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground">
+                <DialogDescription className="text-[#94A3B8]">
                   {selectedTask.description || 'No description provided'}
                 </DialogDescription>
               </DialogHeader>
@@ -421,34 +421,34 @@ export default function MyTasks() {
                 {/* Task Meta */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <p className="text-xs text-muted-foreground mb-1">Priority</p>
+                    <p className="text-xs text-[#94A3B8] mb-1">Priority</p>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityBadgeClass(selectedTask.priority)}`}>
                       {selectedTask.priority}
                     </span>
                   </div>
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <p className="text-xs text-muted-foreground mb-1">Deadline</p>
-                    <p className="text-sm text-foreground">
+                    <p className="text-xs text-[#94A3B8] mb-1">Deadline</p>
+                    <p className="text-sm text-[#E5E7EB]">
                       {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No deadline'}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <p className="text-xs text-muted-foreground mb-1">Created</p>
-                    <p className="text-sm text-foreground">
+                    <p className="text-xs text-[#94A3B8] mb-1">Created</p>
+                    <p className="text-sm text-[#E5E7EB]">
                       {new Date(selectedTask.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <p className="text-xs text-muted-foreground mb-1">Department</p>
-                    <p className="text-sm text-foreground">{selectedTask.employee?.department || '-'}</p>
+                    <p className="text-xs text-[#94A3B8] mb-1">Department</p>
+                    <p className="text-sm text-[#E5E7EB]">{selectedTask.employee?.department || '-'}</p>
                   </div>
                 </div>
 
                 {/* Progress Slider */}
                 <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 255, 178, 0.03)', border: '1px solid rgba(0, 255, 178, 0.1)' }}>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-foreground">Progress</p>
-                    <span className="text-lg font-bold text-neon">{progressValue}%</span>
+                    <p className="text-sm font-medium text-[#E5E7EB]">Progress</p>
+                    <span className="text-lg font-bold text-[#00FFB2]">{progressValue}%</span>
                   </div>
                   <Slider
                     value={[progressValue]}
@@ -463,12 +463,12 @@ export default function MyTasks() {
 
                 {/* Status Change */}
                 <div className="flex items-center gap-4">
-                  <p className="text-sm font-medium text-foreground">Status:</p>
+                  <p className="text-sm font-medium text-[#E5E7EB]">Status:</p>
                   <Select value={statusValue} onValueChange={setStatusValue}>
-                    <SelectTrigger className="w-44 bg-dark-card border-dark-border">
+                    <SelectTrigger className="w-44 bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#111827] border-dark-border">
+                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="in-progress">In Progress</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
@@ -495,8 +495,8 @@ export default function MyTasks() {
                 {/* Attachments */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-                      <Paperclip className="size-4 text-cyan" />
+                    <h4 className="text-sm font-medium text-[#E5E7EB] flex items-center gap-2">
+                      <Paperclip className="size-4 text-[#00E5FF]" />
                       Attachments ({selectedTask.attachments?.length || 0})
                     </h4>
                     <label className="cursor-pointer">
@@ -516,28 +516,28 @@ export default function MyTasks() {
                     <div className="space-y-2">
                       {selectedTask.attachments.map((att) => (
                         <div key={att.id} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                          <Paperclip className="size-3 text-muted-foreground" />
+                          <Paperclip className="size-3 text-[#94A3B8]" />
                           <a
                             href={att.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-cyan hover:underline flex-1 truncate"
+                            className="text-xs text-[#00E5FF] hover:underline flex-1 truncate"
                           >
                             {att.filename}
                           </a>
-                          <span className="text-xs text-muted-foreground">{att.fileType}</span>
+                          <span className="text-xs text-[#94A3B8]">{att.fileType}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground">No attachments yet</p>
+                    <p className="text-xs text-[#94A3B8]">No attachments yet</p>
                   )}
                 </div>
 
                 {/* Comments */}
                 <div>
-                  <h4 className="text-sm font-medium text-foreground flex items-center gap-2 mb-3">
-                    <MessageSquare className="size-4 text-cyan" />
+                  <h4 className="text-sm font-medium text-[#E5E7EB] flex items-center gap-2 mb-3">
+                    <MessageSquare className="size-4 text-[#00E5FF]" />
                     Comments ({selectedTask.comments?.length || 0})
                   </h4>
 
@@ -547,13 +547,13 @@ export default function MyTasks() {
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Add a comment..."
-                      className="min-h-[60px] bg-dark-card border-dark-border resize-none text-sm"
+                      className="min-h-[60px] bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] resize-none text-sm"
                     />
                     <Button
                       onClick={handleAddComment}
                       disabled={!commentText.trim() || sendingComment}
                       size="icon"
-                      className="shrink-0 bg-cyan/20 text-cyan hover:bg-cyan/30 border border-cyan/30 h-10 w-10"
+                      className="shrink-0 bg-[rgba(0,229,255,0.2)] text-[#00E5FF] hover:bg-[rgba(0,229,255,0.3)] border border-[rgba(0,229,255,0.3)] h-10 w-10"
                     >
                       {sendingComment ? (
                         <span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -569,20 +569,20 @@ export default function MyTasks() {
                       {selectedTask.comments.map((comment) => (
                         <div key={comment.id} className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-medium text-neon">{comment.authorName}</span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${comment.authorRole === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-cyan/15 text-cyan'}`}>
+                            <span className="text-xs font-medium text-[#00FFB2]">{comment.authorName}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${comment.authorRole === 'admin' ? 'bg-purple-500/15 text-purple-400' : 'bg-[rgba(0,229,255,0.15)] text-[#00E5FF]'}`}>
                               {comment.authorRole}
                             </span>
-                            <span className="text-[10px] text-muted-foreground ml-auto">
+                            <span className="text-[10px] text-[#94A3B8] ml-auto">
                               {new Date(comment.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="text-xs text-foreground">{comment.content}</p>
+                          <p className="text-xs text-[#E5E7EB]">{comment.content}</p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground">No comments yet</p>
+                    <p className="text-xs text-[#94A3B8]">No comments yet</p>
                   )}
                 </div>
               </div>

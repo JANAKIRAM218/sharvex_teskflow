@@ -181,10 +181,10 @@ export default function EmployeeNotifications() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48 bg-dark-card" />
+        <Skeleton className="h-10 w-48" style={{ background: 'rgba(255,255,255,0.05)' }} />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-20 rounded-2xl bg-dark-card" />
+            <Skeleton key={i} className="h-20 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
           ))}
         </div>
       </div>
@@ -201,23 +201,23 @@ export default function EmployeeNotifications() {
       {/* Header */}
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-            <Bell className="size-7 text-neon" />
+          <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB] flex items-center gap-2">
+            <Bell className="size-7 text-[#00FFB2]" />
             Notifications
             {unreadCount > 0 && (
-              <span className="ml-2 px-2.5 py-0.5 rounded-full text-sm font-medium bg-neon/15 text-neon border border-neon/30">
+              <span className="ml-2 px-2.5 py-0.5 rounded-full text-sm font-medium bg-[rgba(0,255,178,0.15)] text-[#00FFB2] border border-[rgba(0,255,178,0.3)]">
                 {unreadCount}
               </span>
             )}
           </h1>
-          <p className="text-muted-foreground mt-1">Stay updated with your latest notifications</p>
+          <p className="text-[#94A3B8] mt-1">Stay updated with your latest notifications</p>
         </div>
         {unreadCount > 0 && (
           <Button
             onClick={markAllAsRead}
             disabled={markingAll}
             variant="ghost"
-            className="text-neon hover:text-neon/80 flex items-center gap-2"
+            className="text-[#00FFB2] hover:text-[#00FFB2]/80 flex items-center gap-2"
           >
             {markingAll ? (
               <span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -238,9 +238,9 @@ export default function EmployeeNotifications() {
               animate={{ opacity: 1, scale: 1 }}
               className="glass-card p-12 text-center"
             >
-              <BellOff className="size-16 text-muted-foreground mx-auto mb-4 opacity-30" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No notifications</h3>
-              <p className="text-muted-foreground">
+              <BellOff className="size-16 text-[#94A3B8] mx-auto mb-4 opacity-30" />
+              <h3 className="text-lg font-medium text-[#E5E7EB] mb-2">No notifications</h3>
+              <p className="text-[#94A3B8]">
                 You&apos;re all caught up! Notifications will appear here when there&apos;s something new.
               </p>
             </motion.div>
@@ -283,18 +283,18 @@ export default function EmployeeNotifications() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h3 className={`text-sm font-medium ${!notification.isRead ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        <h3 className={`text-sm font-medium ${!notification.isRead ? 'text-[#E5E7EB]' : 'text-[#94A3B8]'}`}>
                           {notification.title}
                         </h3>
-                        <p className={`text-xs mt-0.5 ${!notification.isRead ? 'text-foreground/80' : 'text-muted-foreground'}`}>
+                        <p className={`text-xs mt-0.5 ${!notification.isRead ? 'text-[#E5E7EB]/80' : 'text-[#94A3B8]'}`}>
                           {notification.message}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         {!notification.isRead && (
-                          <span className="size-2 rounded-full bg-neon neon-pulse" />
+                          <span className="size-2 rounded-full bg-[#00FFB2] neon-pulse" />
                         )}
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        <span className="text-xs text-[#94A3B8] whitespace-nowrap">
                           {formatTimestamp(notification.createdAt)}
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export default function EmployeeNotifications() {
       {/* Load More / Summary */}
       {notifications.length > 0 && (
         <motion.div variants={itemVariants} className="text-center py-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[#94A3B8]">
             Showing {notifications.length} notification{notifications.length > 1 ? 's' : ''}
             {unreadCount > 0 && ` · ${unreadCount} unread`}
           </p>

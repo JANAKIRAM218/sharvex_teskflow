@@ -240,15 +240,15 @@ export default function EmployeeDashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-64 bg-dark-card" />
+        <Skeleton className="h-10 w-64" style={{ background: 'rgba(255,255,255,0.05)' }} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl bg-dark-card" />
+            <Skeleton key={i} className="h-32 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-80 rounded-2xl bg-dark-card lg:col-span-2" />
-          <Skeleton className="h-80 rounded-2xl bg-dark-card" />
+          <Skeleton className="h-80 rounded-2xl lg:col-span-2" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <Skeleton className="h-80 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
         </div>
       </div>
     );
@@ -264,13 +264,13 @@ export default function EmployeeDashboard() {
       {/* Welcome Header */}
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Welcome back, <span className="text-neon">{user?.name || 'Employee'}</span>
+          <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB]">
+            Welcome back, <span className="text-[#00FFB2]">{user?.name || 'Employee'}</span>
           </h1>
-          <p className="text-muted-foreground mt-1">Here&apos;s your work overview for today</p>
+          <p className="text-[#94A3B8] mt-1">Here&apos;s your work overview for today</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-[#94A3B8]">
             {new Date().toLocaleDateString('en-US', {
               weekday: 'long',
               year: 'numeric',
@@ -311,8 +311,8 @@ export default function EmployeeDashboard() {
                   />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">{card.value}</p>
-              <p className="text-sm text-muted-foreground mt-1">{card.label}</p>
+              <p className="text-2xl font-bold text-[#E5E7EB]">{card.value}</p>
+              <p className="text-sm text-[#94A3B8] mt-1">{card.label}</p>
             </div>
           </motion.div>
         ))}
@@ -324,11 +324,11 @@ export default function EmployeeDashboard() {
         <motion.div variants={itemVariants} className="glass-card p-6 lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Activity className="size-5 text-cyan" />
+              <h2 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2">
+                <Activity className="size-5 text-[#00E5FF]" />
                 Weekly Progress
               </h2>
-              <p className="text-sm text-muted-foreground mt-1">Task completion trend</p>
+              <p className="text-sm text-[#94A3B8] mt-1">Task completion trend</p>
             </div>
           </div>
           <div className="h-64">
@@ -390,37 +390,37 @@ export default function EmployeeDashboard() {
 
         {/* Attendance Card */}
         <motion.div variants={itemVariants} className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-6">
-            <Zap className="size-5 text-neon" />
+          <h2 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2 mb-6">
+            <Zap className="size-5 text-[#00FFB2]" />
             Attendance
           </h2>
           <div className="space-y-4">
             <div className="flex flex-col items-center justify-center p-6 rounded-xl" style={{ background: isClockedIn ? 'rgba(0, 255, 178, 0.08)' : 'rgba(255, 255, 255, 0.03)', border: `1px solid ${isClockedIn ? 'rgba(0, 255, 178, 0.2)' : 'rgba(255, 255, 255, 0.06)'}` }}>
               <div className={`size-16 rounded-full flex items-center justify-center mb-3 ${isClockedIn ? 'neon-pulse' : ''}`} style={{ background: isClockedIn ? 'rgba(0, 255, 178, 0.15)' : 'rgba(255, 255, 255, 0.05)' }}>
                 {isClockedIn ? (
-                  <LogOut className="size-7 text-neon" />
+                  <LogOut className="size-7 text-[#00FFB2]" />
                 ) : (
-                  <LogIn className="size-7 text-muted-foreground" />
+                  <LogIn className="size-7 text-[#94A3B8]" />
                 )}
               </div>
-              <p className="text-lg font-semibold text-foreground">
+              <p className="text-lg font-semibold text-[#E5E7EB]">
                 {isClockedIn ? 'Clocked In' : attendance?.clockOut ? 'Clocked Out' : 'Not Clocked In'}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-[#94A3B8] mt-1">
                 {isClockedIn ? `Since ${formatTime(attendance.clockIn)}` : attendance?.clockOut ? `${formatTime(attendance.clockIn)} - ${formatTime(attendance.clockOut)}` : 'Click below to clock in'}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
-                <p className="text-xs text-muted-foreground mb-1">Clock In</p>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-xs text-[#94A3B8] mb-1">Clock In</p>
+                <p className="text-sm font-semibold text-[#E5E7EB]">
                   {formatTime(attendance?.clockIn || null)}
                 </p>
               </div>
               <div className="text-center p-3 rounded-xl" style={{ background: 'rgba(255, 255, 255, 0.03)' }}>
-                <p className="text-xs text-muted-foreground mb-1">Clock Out</p>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-xs text-[#94A3B8] mb-1">Clock Out</p>
+                <p className="text-sm font-semibold text-[#E5E7EB]">
                   {formatTime(attendance?.clockOut || null)}
                 </p>
               </div>
@@ -454,16 +454,16 @@ export default function EmployeeDashboard() {
       <motion.div variants={itemVariants} className="glass-card p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <ListTodo className="size-5 text-neon" />
+            <h2 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2">
+              <ListTodo className="size-5 text-[#00FFB2]" />
               My Recent Tasks
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">Your latest assigned tasks</p>
+            <p className="text-sm text-[#94A3B8] mt-1">Your latest assigned tasks</p>
           </div>
           <Button
             variant="ghost"
             onClick={() => setCurrentPage('my-tasks')}
-            className="text-cyan hover:text-cyan/80 flex items-center gap-1"
+            className="text-[#00E5FF] hover:text-[#00E5FF]/80 flex items-center gap-1"
           >
             View All <ArrowRight className="size-4" />
           </Button>
@@ -471,8 +471,8 @@ export default function EmployeeDashboard() {
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {tasks.length === 0 ? (
             <div className="text-center py-12">
-              <ListTodo className="size-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-              <p className="text-muted-foreground">No tasks assigned yet</p>
+              <ListTodo className="size-12 text-[#94A3B8] mx-auto mb-3 opacity-50" />
+              <p className="text-[#94A3B8]">No tasks assigned yet</p>
             </div>
           ) : (
             tasks.map((task) => (
@@ -483,7 +483,7 @@ export default function EmployeeDashboard() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-medium text-foreground truncate">{task.title}</h3>
+                    <h3 className="text-sm font-medium text-[#E5E7EB] truncate">{task.title}</h3>
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
                       {task.status.replace('-', ' ')}
                     </span>
@@ -492,21 +492,21 @@ export default function EmployeeDashboard() {
                     </span>
                   </div>
                   {task.description && (
-                    <p className="text-xs text-muted-foreground truncate">{task.description}</p>
+                    <p className="text-xs text-[#94A3B8] truncate">{task.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-4 shrink-0">
                   <div className="w-32">
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="text-foreground font-medium">{task.progress}%</span>
+                      <span className="text-[#94A3B8]">Progress</span>
+                      <span className="text-[#E5E7EB] font-medium">{task.progress}%</span>
                     </div>
                     <Progress value={task.progress} className="h-1.5" />
                   </div>
                   {task.deadline && (
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Deadline</p>
-                      <p className="text-xs text-foreground">
+                      <p className="text-xs text-[#94A3B8]">Deadline</p>
+                      <p className="text-xs text-[#E5E7EB]">
                         {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>

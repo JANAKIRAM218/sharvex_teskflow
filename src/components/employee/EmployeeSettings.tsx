@@ -112,76 +112,76 @@ export default function EmployeeSettings() {
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-          <Settings className="size-7 text-neon" />
+        <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB] flex items-center gap-2">
+          <Settings className="size-7 text-[#00FFB2]" />
           Settings
         </h1>
-        <p className="text-muted-foreground mt-1">Customize your experience and manage your account</p>
+        <p className="text-[#94A3B8] mt-1">Customize your experience and manage your account</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Notification Preferences */}
         <motion.div variants={itemVariants} className="glass-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Bell className="size-5 text-neon" />
+          <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+            <Bell className="size-5 text-[#00FFB2]" />
             Notification Preferences
           </h3>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-[#94A3B8] mb-6">
             Choose which notifications you want to receive
           </p>
 
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Task Assigned</Label>
-                <p className="text-xs text-muted-foreground">Get notified when a new task is assigned to you</p>
+                <Label className="text-[#E5E7EB] text-sm">Task Assigned</Label>
+                <p className="text-xs text-[#94A3B8]">Get notified when a new task is assigned to you</p>
               </div>
               <Switch
                 checked={taskAssigned}
                 onCheckedChange={setTaskAssigned}
-                className="data-[state=checked]:bg-neon"
+                className="data-[state=checked]:bg-[#00FFB2]"
               />
             </div>
 
-            <Separator className="bg-dark-border" />
+            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Deadline Reminders</Label>
-                <p className="text-xs text-muted-foreground">Receive reminders before task deadlines</p>
+                <Label className="text-[#E5E7EB] text-sm">Deadline Reminders</Label>
+                <p className="text-xs text-[#94A3B8]">Receive reminders before task deadlines</p>
               </div>
               <Switch
                 checked={deadlineReminder}
                 onCheckedChange={setDeadlineReminder}
-                className="data-[state=checked]:bg-neon"
+                className="data-[state=checked]:bg-[#00FFB2]"
               />
             </div>
 
-            <Separator className="bg-dark-border" />
+            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Task Completed</Label>
-                <p className="text-xs text-muted-foreground">Get notified when your tasks are marked complete</p>
+                <Label className="text-[#E5E7EB] text-sm">Task Completed</Label>
+                <p className="text-xs text-[#94A3B8]">Get notified when your tasks are marked complete</p>
               </div>
               <Switch
                 checked={taskCompleted}
                 onCheckedChange={setTaskCompleted}
-                className="data-[state=checked]:bg-neon"
+                className="data-[state=checked]:bg-[#00FFB2]"
               />
             </div>
 
-            <Separator className="bg-dark-border" />
+            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Email Notifications</Label>
-                <p className="text-xs text-muted-foreground">Receive notifications via email</p>
+                <Label className="text-[#E5E7EB] text-sm">Email Notifications</Label>
+                <p className="text-xs text-[#94A3B8]">Receive notifications via email</p>
               </div>
               <Switch
                 checked={emailNotifications}
                 onCheckedChange={setEmailNotifications}
-                className="data-[state=checked]:bg-neon"
+                className="data-[state=checked]:bg-[#00FFB2]"
               />
             </div>
           </div>
@@ -206,52 +206,52 @@ export default function EmployeeSettings() {
 
         {/* Theme Settings */}
         <motion.div variants={itemVariants} className="glass-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Moon className="size-5 text-cyan" />
+          <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+            <Moon className="size-5 text-[#00E5FF]" />
             Appearance
           </h3>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-[#94A3B8] mb-6">
             Customize the look and feel of your workspace
           </p>
 
           <div className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Dark Mode</Label>
-                <p className="text-xs text-muted-foreground">Toggle between light and dark themes</p>
+                <Label className="text-[#E5E7EB] text-sm">Dark Mode</Label>
+                <p className="text-xs text-[#94A3B8]">Toggle between light and dark themes</p>
               </div>
               <Switch
                 checked={darkMode}
                 onCheckedChange={setDarkMode}
                 disabled={true}
-                className="data-[state=checked]:bg-neon opacity-60"
+                className="data-[state=checked]:bg-[#00FFB2] opacity-60"
               />
             </div>
 
-            <Separator className="bg-dark-border" />
+            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label className="text-foreground text-sm">Animations</Label>
-                <p className="text-xs text-muted-foreground">Enable smooth animations and transitions</p>
+                <Label className="text-[#E5E7EB] text-sm">Animations</Label>
+                <p className="text-xs text-[#94A3B8]">Enable smooth animations and transitions</p>
               </div>
               <Switch
                 checked={animations}
                 onCheckedChange={setAnimations}
-                className="data-[state=checked]:bg-neon"
+                className="data-[state=checked]:bg-[#00FFB2]"
               />
             </div>
 
-            <Separator className="bg-dark-border" />
+            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
             {/* Theme Preview */}
             <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 255, 178, 0.03)', border: '1px solid rgba(0, 255, 178, 0.1)' }}>
-              <p className="text-xs text-neon mb-3 font-medium">Current Theme: Dark Futuristic</p>
+              <p className="text-xs text-[#00FFB2] mb-3 font-medium">Current Theme: Dark Futuristic</p>
               <div className="flex gap-2">
                 <div className="size-8 rounded-lg" style={{ background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)' }} />
                 <div className="size-8 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }} />
-                <div className="size-8 rounded-lg bg-neon" />
-                <div className="size-8 rounded-lg bg-cyan" />
+                <div className="size-8 rounded-lg bg-[#00FFB2]" />
+                <div className="size-8 rounded-lg bg-[#00E5FF]" />
                 <div className="size-8 rounded-lg" style={{ background: '#A78BFA' }} />
                 <div className="size-8 rounded-lg" style={{ background: '#F59E0B' }} />
               </div>
@@ -261,45 +261,45 @@ export default function EmployeeSettings() {
 
         {/* Account Info */}
         <motion.div variants={itemVariants} className="glass-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Shield className="size-5 text-neon" />
+          <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+            <Shield className="size-5 text-[#00FFB2]" />
             Account Information
           </h3>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-[#94A3B8] mb-6">
             Your account details and status
           </p>
 
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <User className="size-4 text-cyan shrink-0" />
+              <User className="size-4 text-[#00E5FF] shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Full Name</p>
-                <p className="text-sm text-foreground truncate">{user?.name || '-'}</p>
+                <p className="text-xs text-[#94A3B8]">Full Name</p>
+                <p className="text-sm text-[#E5E7EB] truncate">{user?.name || '-'}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <Mail className="size-4 text-cyan shrink-0" />
+              <Mail className="size-4 text-[#00E5FF] shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Username</p>
-                <p className="text-sm text-foreground truncate">{user?.username || '-'}</p>
+                <p className="text-xs text-[#94A3B8]">Username</p>
+                <p className="text-sm text-[#E5E7EB] truncate">{user?.username || '-'}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <Shield className="size-4 text-cyan shrink-0" />
+              <Shield className="size-4 text-[#00E5FF] shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Role</p>
-                <p className="text-sm text-foreground capitalize">{user?.role || '-'}</p>
+                <p className="text-xs text-[#94A3B8]">Role</p>
+                <p className="text-sm text-[#E5E7EB] capitalize">{user?.role || '-'}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-              <Settings className="size-4 text-cyan shrink-0" />
+              <Settings className="size-4 text-[#00E5FF] shrink-0" />
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Status</p>
-                <p className="text-sm text-neon flex items-center gap-1">
-                  <span className="size-1.5 rounded-full bg-neon neon-pulse" />
+                <p className="text-xs text-[#94A3B8]">Status</p>
+                <p className="text-sm text-[#00FFB2] flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-[#00FFB2] neon-pulse" />
                   Active
                 </p>
               </div>
@@ -309,28 +309,28 @@ export default function EmployeeSettings() {
 
         {/* Change Password */}
         <motion.div variants={itemVariants} className="glass-card p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Lock className="size-5 text-cyan" />
+          <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+            <Lock className="size-5 text-[#00E5FF]" />
             Change Password
           </h3>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-[#94A3B8] mb-6">
             Update your account password for security
           </p>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground text-xs">Current Password</Label>
+              <Label className="text-[#94A3B8] text-xs">Current Password</Label>
               <div className="relative">
                 <Input
                   type={showPasswords ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-dark-card border-dark-border text-foreground pr-10"
+                  className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB] pr-10"
                   placeholder="Enter current password"
                 />
                 <button
                   onClick={() => setShowPasswords(!showPasswords)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#E5E7EB]"
                   type="button"
                 >
                   {showPasswords ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -339,23 +339,23 @@ export default function EmployeeSettings() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-muted-foreground text-xs">New Password</Label>
+              <Label className="text-[#94A3B8] text-xs">New Password</Label>
               <Input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-dark-card border-dark-border text-foreground"
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                 placeholder="Enter new password"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-muted-foreground text-xs">Confirm New Password</Label>
+              <Label className="text-[#94A3B8] text-xs">Confirm New Password</Label>
               <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-dark-card border-dark-border text-foreground"
+                className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                 placeholder="Confirm new password"
               />
             </div>
@@ -381,7 +381,7 @@ export default function EmployeeSettings() {
                     />
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[#94A3B8]">
                   {newPassword.length < 6
                     ? 'Weak password'
                     : newPassword.length < 8
@@ -397,7 +397,7 @@ export default function EmployeeSettings() {
               onClick={handleChangePassword}
               disabled={changingPassword}
               variant="outline"
-              className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:text-cyan w-full"
+              className="border-[rgba(0,229,255,0.3)] text-[#00E5FF] hover:bg-[rgba(0,229,255,0.1)] hover:text-[#00E5FF] w-full"
             >
               {changingPassword ? (
                 <span className="flex items-center gap-2">

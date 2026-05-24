@@ -129,10 +129,10 @@ export default function EmployeeCalendar() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-10 w-48 bg-dark-card" />
+        <Skeleton className="h-10 w-48" style={{ background: 'rgba(255,255,255,0.05)' }} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-96 rounded-2xl bg-dark-card lg:col-span-2" />
-          <Skeleton className="h-96 rounded-2xl bg-dark-card" />
+          <Skeleton className="h-96 rounded-2xl lg:col-span-2" style={{ background: 'rgba(255,255,255,0.05)' }} />
+          <Skeleton className="h-96 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)' }} />
         </div>
       </div>
     );
@@ -147,11 +147,11 @@ export default function EmployeeCalendar() {
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-          <CalendarDays className="size-7 text-neon" />
+        <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB] flex items-center gap-2">
+          <CalendarDays className="size-7 text-[#00FFB2]" />
           Calendar
         </h1>
-        <p className="text-muted-foreground mt-1">View your task deadlines on a calendar</p>
+        <p className="text-[#94A3B8] mt-1">View your task deadlines on a calendar</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -159,7 +159,7 @@ export default function EmployeeCalendar() {
         <motion.div variants={itemVariants} className="glass-card p-6 lg:col-span-2">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold text-[#E5E7EB]">
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </h2>
             <div className="flex items-center gap-2">
@@ -167,7 +167,7 @@ export default function EmployeeCalendar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => handleMonthChange('prev')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[#94A3B8] hover:text-[#E5E7EB]"
               >
                 <ChevronLeft className="size-5" />
               </Button>
@@ -178,7 +178,7 @@ export default function EmployeeCalendar() {
                   setCurrentMonth(new Date());
                   setSelectedDate(new Date());
                 }}
-                className="text-neon hover:text-neon/80 text-xs"
+                className="text-[#00FFB2] hover:text-[#00FFB2]/80 text-xs"
               >
                 Today
               </Button>
@@ -186,7 +186,7 @@ export default function EmployeeCalendar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => handleMonthChange('next')}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-[#94A3B8] hover:text-[#E5E7EB]"
               >
                 <ChevronRight className="size-5" />
               </Button>
@@ -224,9 +224,9 @@ export default function EmployeeCalendar() {
                     className={`
                       relative flex flex-col items-center justify-center
                       size-10 rounded-lg text-sm transition-all duration-200
-                      ${isSelected ? 'bg-neon text-dark-bg font-bold neon-glow' : ''}
-                      ${isToday && !isSelected ? 'bg-cyan/15 text-cyan font-semibold border border-cyan/30' : ''}
-                      ${!isSelected && !isToday ? 'hover:bg-white/5 text-foreground' : ''}
+                      ${isSelected ? 'bg-[#00FFB2] text-[#0B0F19] font-bold neon-glow' : ''}
+                      ${isToday && !isSelected ? 'bg-[#00E5FF]/15 text-[#00E5FF] font-semibold border border-[rgba(0,229,255,0.3)]' : ''}
+                      ${!isSelected && !isToday ? 'hover:bg-white/5 text-[#E5E7EB]' : ''}
                     `}
                   >
                     <span>{dateObj.getDate()}</span>
@@ -235,7 +235,7 @@ export default function EmployeeCalendar() {
                         {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
                           <span
                             key={i}
-                            className={`size-1 rounded-full ${isSelected ? 'bg-dark-bg' : 'bg-neon'}`}
+                            className={`size-1 rounded-full ${isSelected ? 'bg-[#0B0F19]' : 'bg-[#00FFB2]'}`}
                           />
                         ))}
                       </div>
@@ -247,14 +247,14 @@ export default function EmployeeCalendar() {
           />
 
           {/* Legend */}
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-dark-border">
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-[rgba(255,255,255,0.08)]">
             <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-neon" />
-              <span className="text-xs text-muted-foreground">Task deadline</span>
+              <span className="size-2 rounded-full bg-[#00FFB2]" />
+              <span className="text-xs text-[#94A3B8]">Task deadline</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-cyan" />
-              <span className="text-xs text-muted-foreground">Today</span>
+              <span className="size-2 rounded-full bg-[#00E5FF]" />
+              <span className="text-xs text-[#94A3B8]">Today</span>
             </div>
           </div>
         </motion.div>
@@ -262,7 +262,7 @@ export default function EmployeeCalendar() {
         {/* Selected Date Tasks Panel */}
         <motion.div variants={itemVariants} className="glass-card p-6">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-foreground">
+            <h2 className="text-lg font-semibold text-[#E5E7EB]">
               {selectedDate
                 ? selectedDate.toLocaleDateString('en-US', {
                     weekday: 'long',
@@ -271,7 +271,7 @@ export default function EmployeeCalendar() {
                   })
                 : 'Select a date'}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-[#94A3B8]">
               {selectedDateTasks.length > 0
                 ? `${selectedDateTasks.length} task${selectedDateTasks.length > 1 ? 's' : ''} due`
                 : 'No tasks due on this date'}
@@ -287,8 +287,8 @@ export default function EmployeeCalendar() {
                   exit={{ opacity: 0 }}
                   className="text-center py-8"
                 >
-                  <CalendarDays className="size-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-                  <p className="text-sm text-muted-foreground">No tasks on this date</p>
+                  <CalendarDays className="size-12 text-[#94A3B8] mx-auto mb-3 opacity-30" />
+                  <p className="text-sm text-[#94A3B8]">No tasks on this date</p>
                 </motion.div>
               ) : (
                 selectedDateTasks.map((task, index) => {
@@ -306,14 +306,14 @@ export default function EmployeeCalendar() {
                       className="task-card glass-card glass-card-hover p-4"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
-                        <h3 className="text-sm font-medium text-foreground line-clamp-1">{task.title}</h3>
+                        <h3 className="text-sm font-medium text-[#E5E7EB] line-clamp-1">{task.title}</h3>
                         <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(task.status)}`}>
                           {task.status.replace('-', ' ')}
                         </span>
                       </div>
 
                       {task.description && (
-                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{task.description}</p>
+                        <p className="text-xs text-[#94A3B8] mb-2 line-clamp-2">{task.description}</p>
                       )}
 
                       <div className="flex items-center gap-2 mb-2">
@@ -336,8 +336,8 @@ export default function EmployeeCalendar() {
 
                       <div className="mt-2">
                         <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className="text-foreground font-medium">{task.progress}%</span>
+                          <span className="text-[#94A3B8]">Progress</span>
+                          <span className="text-[#E5E7EB] font-medium">{task.progress}%</span>
                         </div>
                         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
                           <div
@@ -364,8 +364,8 @@ export default function EmployeeCalendar() {
 
       {/* Upcoming Deadlines Summary */}
       <motion.div variants={itemVariants} className="glass-card p-6">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-4">
-          <Clock className="size-5 text-cyan" />
+        <h2 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2 mb-4">
+          <Clock className="size-5 text-[#00E5FF]" />
           Upcoming Deadlines
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -394,8 +394,8 @@ export default function EmployeeCalendar() {
                     {task.deadline ? new Date(task.deadline).getDate() : '-'}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">{task.title}</p>
-                    <p className={`text-[10px] ${isOverdue ? 'text-red-400' : 'text-muted-foreground'}`}>
+                    <p className="text-xs font-medium text-[#E5E7EB] truncate">{task.title}</p>
+                    <p className={`text-[10px] ${isOverdue ? 'text-red-400' : 'text-[#94A3B8]'}`}>
                       {isOverdue ? `${Math.abs(daysLeft!)}d overdue` : `${daysLeft}d left`}
                     </p>
                   </div>
@@ -405,8 +405,8 @@ export default function EmployeeCalendar() {
         </div>
         {tasks.filter((t) => t.deadline && t.status !== 'completed').length === 0 && (
           <div className="text-center py-8">
-            <ListTodo className="size-10 text-muted-foreground mx-auto mb-2 opacity-30" />
-            <p className="text-sm text-muted-foreground">No upcoming deadlines</p>
+            <ListTodo className="size-10 text-[#94A3B8] mx-auto mb-2 opacity-30" />
+            <p className="text-sm text-[#94A3B8]">No upcoming deadlines</p>
           </div>
         )}
       </motion.div>

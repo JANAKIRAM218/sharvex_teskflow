@@ -225,11 +225,11 @@ export default function Profile() {
     >
       {/* Header */}
       <motion.div variants={itemVariants}>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2">
-          <User className="size-7 text-neon" />
+        <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB] flex items-center gap-2">
+          <User className="size-7 text-[#00FFB2]" />
           My Profile
         </h1>
-        <p className="text-muted-foreground mt-1">Manage your personal information and settings</p>
+        <p className="text-[#94A3B8] mt-1">Manage your personal information and settings</p>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -238,9 +238,9 @@ export default function Profile() {
           <div className="flex flex-col items-center text-center">
             {/* Avatar with upload */}
             <div className="relative group mb-4">
-              <Avatar className="size-24 border-2 border-neon/30">
+              <Avatar className="size-24 border-2 border-[rgba(0,255,178,0.3)]">
                 <AvatarImage src={profileImage} alt={user?.name} />
-                <AvatarFallback className="bg-neon/10 text-neon text-2xl font-bold">
+                <AvatarFallback className="bg-[rgba(0,255,178,0.1)] text-[#00FFB2] text-2xl font-bold">
                   {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
@@ -250,9 +250,9 @@ export default function Profile() {
                 className="absolute inset-0 size-24 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {uploading ? (
-                  <span className="size-5 border-2 border-neon border-t-transparent rounded-full animate-spin" />
+                  <span className="size-5 border-2 border-[#00FFB2] border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <Camera className="size-6 text-neon" />
+                  <Camera className="size-6 text-[#00FFB2]" />
                 )}
               </button>
               <input
@@ -264,22 +264,22 @@ export default function Profile() {
               />
             </div>
 
-            <h2 className="text-lg font-bold text-foreground">{user?.name}</h2>
-            <p className="text-sm text-neon mt-1">{user?.designation || 'Employee'}</p>
+            <h2 className="text-lg font-bold text-[#E5E7EB]">{user?.name}</h2>
+            <p className="text-sm text-[#00FFB2] mt-1">{user?.designation || 'Employee'}</p>
 
-            <Separator className="my-4 bg-dark-border" />
+            <Separator className="my-4 bg-[rgba(255,255,255,0.08)]" />
 
             <div className="space-y-3 w-full">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <BadgeCheck className="size-4 text-cyan shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+                <BadgeCheck className="size-4 text-[#00E5FF] shrink-0" />
                 <span>Code: {user?.employeeCode || '-'}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Building2 className="size-4 text-cyan shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+                <Building2 className="size-4 text-[#00E5FF] shrink-0" />
                 <span>{user?.department || '-'}</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="size-4 text-cyan shrink-0" />
+              <div className="flex items-center gap-2 text-sm text-[#94A3B8]">
+                <Mail className="size-4 text-[#00E5FF] shrink-0" />
                 <span>{user?.username || '-'}</span>
               </div>
             </div>
@@ -293,36 +293,36 @@ export default function Profile() {
             {stats.map((stat) => (
               <div key={stat.label} className="glass-card p-4 text-center">
                 <stat.icon className="size-5 mx-auto mb-2" style={{ color: stat.color }} />
-                <p className="text-lg font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-lg font-bold text-[#E5E7EB]">{stat.value}</p>
+                <p className="text-xs text-[#94A3B8]">{stat.label}</p>
               </div>
             ))}
           </div>
 
           {/* Edit Profile Form */}
           <div className="glass-card p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <User className="size-5 text-neon" />
+            <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+              <User className="size-5 text-[#00FFB2]" />
               Edit Profile
             </h3>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">Full Name</Label>
+                  <Label className="text-[#94A3B8] text-xs">Full Name</Label>
                   <Input
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="bg-dark-card border-dark-border text-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                     placeholder="Enter your full name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">Designation</Label>
+                  <Label className="text-[#94A3B8] text-xs">Designation</Label>
                   <Input
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
-                    className="bg-dark-card border-dark-border text-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                     placeholder="Enter your designation"
                   />
                 </div>
@@ -330,19 +330,19 @@ export default function Profile() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">Department</Label>
+                  <Label className="text-[#94A3B8] text-xs">Department</Label>
                   <Input
                     value={user?.department || ''}
                     disabled
-                    className="bg-dark-card border-dark-border text-muted-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#94A3B8]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">Employee Code</Label>
+                  <Label className="text-[#94A3B8] text-xs">Employee Code</Label>
                   <Input
                     value={user?.employeeCode || ''}
                     disabled
-                    className="bg-dark-card border-dark-border text-muted-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#94A3B8]"
                   />
                 </div>
               </div>
@@ -368,25 +368,25 @@ export default function Profile() {
 
           {/* Change Password */}
           <div className="glass-card p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Lock className="size-5 text-cyan" />
+            <h3 className="text-lg font-semibold text-[#E5E7EB] mb-4 flex items-center gap-2">
+              <Lock className="size-5 text-[#00E5FF]" />
               Change Password
             </h3>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs">Current Password</Label>
+                <Label className="text-[#94A3B8] text-xs">Current Password</Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="bg-dark-card border-dark-border text-foreground pr-10"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB] pr-10"
                     placeholder="Enter current password"
                   />
                   <button
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#E5E7EB]"
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
@@ -395,22 +395,22 @@ export default function Profile() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">New Password</Label>
+                  <Label className="text-[#94A3B8] text-xs">New Password</Label>
                   <Input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-dark-card border-dark-border text-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                     placeholder="Enter new password"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground text-xs">Confirm Password</Label>
+                  <Label className="text-[#94A3B8] text-xs">Confirm Password</Label>
                   <Input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-dark-card border-dark-border text-foreground"
+                    className="bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
                     placeholder="Confirm new password"
                   />
                 </div>
@@ -420,7 +420,7 @@ export default function Profile() {
                 onClick={handleChangePassword}
                 disabled={changingPassword}
                 variant="outline"
-                className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:text-cyan"
+                className="border-[rgba(0,229,255,0.3)] text-[#00E5FF] hover:bg-[rgba(0,229,255,0.1)] hover:text-[#00E5FF]"
               >
                 {changingPassword ? (
                   <span className="flex items-center gap-2">
