@@ -293,3 +293,37 @@ input:focus, textarea:focus, select:focus {
   border-color: rgba(0, 255, 178, 0.3);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 178, 0.1);
 }
+
+/* Native select dark theme fallback */
+select option {
+  background: #111827;
+  color: #E5E7EB;
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:checked {
+  background: rgba(0, 255, 178, 0.15);
+  color: #00FFB2;
+}
+
+/* Safe area for mobile bottom nav */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Date input styling for dark theme */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* Radix select content styling fix */
+[data-radix-select-content] {
+  z-index: 100 !important;
+}
+
+/* Radix popover content styling fix */
+[data-radix-popover-content] {
+  z-index: 100 !important;
+}

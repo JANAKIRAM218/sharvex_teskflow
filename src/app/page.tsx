@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, CheckSquare, BarChart3,
   Bell, Settings, LogOut, Zap, Menu, X, ChevronRight,
-  ListTodo, Calendar, UserCircle, HomeIcon
+  ListTodo, Calendar, UserCircle, HomeIcon, Search
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
@@ -86,7 +86,7 @@ function AppSidebar() {
         }`}
       >
         {/* Logo section */}
-        <div className="flex items-center h-16 px-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
+        <div className="flex items-center h-14 sm:h-16 px-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center shrink-0">
             <Zap className="w-5 h-5 text-[#0B0F19]" />
           </div>
@@ -222,10 +222,11 @@ function AppNavbar() {
   const isAdmin = user?.role === 'admin';
   const navItems = isAdmin ? ADMIN_NAV : EMPLOYEE_NAV;
   const currentLabel = navItems.find(n => n.id === currentPage)?.label || 'Dashboard';
+  const currentIcon = navItems.find(n => n.id === currentPage)?.icon;
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 lg:px-6 h-14 sm:h-16 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[rgba(255,255,255,0.06)]">
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
           onClick={() => setSidebarOpen(true)}
           className="p-2 rounded-xl hover:bg-[rgba(255,255,255,0.05)] text-[#94A3B8] hover:text-[#E5E7EB] transition-colors shrink-0"
@@ -233,20 +234,31 @@ function AppNavbar() {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="min-w-0">
-          <h1 className="text-sm sm:text-base lg:text-lg font-semibold text-[#E5E7EB] truncate">
-            {currentLabel}
-          </h1>
-          <p className="text-[10px] text-[#94A3B8] hidden sm:block">
-            {isAdmin ? 'Admin Portal' : 'Employee Portal'}
-          </p>
+        <div className="flex items-center gap-2 min-w-0">
+          {currentIcon && (
+            <currentIcon className="w-4 h-4 text-[#00FFB2] shrink-0 hidden sm:block" />
+          )}
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base lg:text-lg font-semibold text-[#E5E7EB] truncate">
+              {currentLabel}
+            </h1>
+            <p className="text-[10px] text-[#94A3B8] hidden md:block">
+              {isAdmin ? 'Admin Portal' : 'Employee Portal'}
+            </p>
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* Quick search - hidden on mobile */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-[#94A3B8] text-xs">
+          <Search className="w-3.5 h-3.5" />
+          <span>Search...</span>
+          <kbd className="px-1.5 py-0.5 rounded bg-[rgba(255,255,255,0.06)] text-[10px] font-mono">⌘K</kbd>
+        </div>
         <span className="text-xs text-[#94A3B8] hidden md:block">
           Welcome, <span className="text-[#00FFB2] font-medium">{user?.name || 'User'}</span>
         </span>
-        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center text-[#0B0F19] text-xs sm:text-sm font-bold">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center text-[#0B0F19] text-xs sm:text-sm font-bold shadow-[0_0_15px_rgba(0,255,178,0.2)]">
           {user?.name?.charAt(0)?.toUpperCase() || 'U'}
         </div>
       </div>
@@ -260,7 +272,7 @@ function EmployeeMobileNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-[#0D1117]/95 backdrop-blur-xl border-t border-[rgba(255,255,255,0.06)] safe-area-bottom">
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-16 px-1">
         {EMPLOYEE_MOBILE_NAV.map((item) => {
           const isActive = currentPage === item.id;
           const Icon = item.icon;
@@ -268,13 +280,13 @@ function EmployeeMobileNav() {
             <button
               key={item.id}
               onClick={() => setCurrentPage(item.id)}
-              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all min-w-[56px] ${
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-2 sm:px-3 rounded-xl transition-all min-w-0 flex-1 max-w-[72px] ${
                 isActive
                   ? 'text-[#00FFB2]'
                   : 'text-[#94A3B8] active:text-[#E5E7EB]'
               }`}
             >
-              <div className={`relative ${isActive ? '' : ''}`}>
+              <div className="relative">
                 <Icon className="w-5 h-5" />
                 {isActive && (
                   <motion.div
@@ -284,7 +296,7 @@ function EmployeeMobileNav() {
                   />
                 )}
               </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] sm:text-xs font-medium truncate">{item.label}</span>
             </button>
           );
         })}
@@ -339,7 +351,7 @@ export default function Home() {
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Validate token on mount
   useEffect(() => {
@@ -400,7 +412,7 @@ export default function Home() {
           </AnimatePresence>
         </main>
         {/* Footer - desktop only */}
-        <footer className="hidden lg:block px-6 py-4 border-t border-[rgba(255,255,255,0.06)] text-center">
+        <footer className="hidden lg:block px-6 py-4 border-t border-[rgba(255,255,255,0.06)] text-center mt-auto">
           <p className="text-xs text-[#94A3B8]">
             © 2024 TaskFlow PRO — Employee Task Management Platform. Built with{' '}
             <span className="text-[#00FFB2]">♥</span> for productivity.

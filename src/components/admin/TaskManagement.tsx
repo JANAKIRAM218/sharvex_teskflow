@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Filter, Clock, AlertTriangle, CheckCircle2,
-  X, Loader2, Calendar, User, MessageSquare, Paperclip,
+  X, Loader2, CalendarIcon, User, MessageSquare, Paperclip,
   GripVertical
 } from 'lucide-react';
 import {
@@ -15,6 +15,20 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 
 interface TaskEmployee {
   id: string;
@@ -123,7 +137,7 @@ function SortableTaskCard({
           </div>
           {task.deadline && (
             <span className="text-[10px] text-[#94A3B8] flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
+              <CalendarIcon className="w-3 h-3" />
               {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}
@@ -157,11 +171,17 @@ export default function TaskManagement() {
     deadline: '',
   });
   const [createLoading, setCreateLoading] = useState(false);
+  const [createDeadline, setCreateDeadline] = useState<Date | undefined>(undefined);
 
   // Detail modal state
   const [detailProgress, setDetailProgress] = useState(0);
   const [detailStatus, setDetailStatus] = useState('');
   const [updateLoading, setUpdateLoading] = useState(false);
+
+  const formatJoinDate = (date: Date | undefined) => {
+    if (!date) return 'Pick a date';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -292,10 +312,11 @@ export default function TaskManagement() {
     }
     setCreateLoading(true);
     try {
+      const deadline = createDeadline ? createDeadline.toISOString().split('T')[0] : '';
       const res = await fetch('/api/tasks', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(createForm),
+        body: JSON.stringify({ ...createForm, deadline }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -305,6 +326,7 @@ export default function TaskManagement() {
       toast.success('Task created successfully!');
       setShowCreateModal(false);
       setCreateForm({ title: '', description: '', assignedTo: '', priority: 'medium', deadline: '' });
+      setCreateDeadline(undefined);
       fetchTasks();
     } catch {
       toast.error('Failed to create task');
@@ -411,24 +433,34 @@ export default function TaskManagement() {
           <Filter className="w-4 h-4" />
           <span className="text-sm">Filters:</span>
         </div>
-        <select
-          value={filterPriority}
-          onChange={(e) => setFilterPriority(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+        <Select
+          value={filterPriority || '__all__'}
+          onValueChange={(val) => setFilterPriority(val === '__all__' ? '' : val)}
         >
-          <option value="">All Priorities</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <select
-          value={filterAssignee}
-          onChange={(e) => setFilterAssignee(e.target.value)}
-          className="px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+          <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+            <SelectValue placeholder="All Priorities" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+            <SelectItem value="__all__" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">All Priorities</SelectItem>
+            <SelectItem value="high" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">High</SelectItem>
+            <SelectItem value="medium" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Medium</SelectItem>
+            <SelectItem value="low" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Low</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={filterAssignee || '__all__'}
+          onValueChange={(val) => setFilterAssignee(val === '__all__' ? '' : val)}
         >
-          <option value="">All Assignees</option>
-          {employees.map((e) => <option key={e.id} value={e.id}>{e.fullName}</option>)}
-        </select>
+          <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+            <SelectValue placeholder="All Assignees" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+            <SelectItem value="__all__" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">All Assignees</SelectItem>
+            {employees.map((emp) => (
+              <SelectItem key={emp.id} value={emp.id} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">{emp.fullName}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Kanban Board */}
@@ -514,7 +546,7 @@ export default function TaskManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border"
+              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
@@ -546,36 +578,59 @@ export default function TaskManagement() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Assign To *</label>
-                  <select
-                    value={createForm.assignedTo}
-                    onChange={(e) => setCreateForm({ ...createForm, assignedTo: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                  <Select
+                    value={createForm.assignedTo || '__none__'}
+                    onValueChange={(val) => setCreateForm({ ...createForm, assignedTo: val === '__none__' ? '' : val })}
                   >
-                    <option value="">Select employee</option>
-                    {employees.map((e) => <option key={e.id} value={e.id}>{e.fullName} - {e.department}</option>)}
-                  </select>
+                    <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                      <SelectValue placeholder="Select employee" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                      <SelectItem value="__none__" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Select employee</SelectItem>
+                      {employees.map((emp) => (
+                        <SelectItem key={emp.id} value={emp.id} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">{emp.fullName} - {emp.department}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <label className="text-sm text-[#94A3B8]">Priority</label>
-                    <select
+                    <Select
                       value={createForm.priority}
-                      onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                      onValueChange={(val) => setCreateForm({ ...createForm, priority: val })}
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                    </select>
+                      <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                        <SelectValue placeholder="Priority" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                        <SelectItem value="low" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Low</SelectItem>
+                        <SelectItem value="medium" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Medium</SelectItem>
+                        <SelectItem value="high" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">High</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm text-[#94A3B8]">Deadline</label>
-                    <input
-                      type="date"
-                      value={createForm.deadline}
-                      onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={`w-full justify-start text-left font-normal rounded-xl bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] ${!createDeadline ? 'text-[#94A3B8]' : 'text-[#E5E7EB]'}`}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatJoinDate(createDeadline)}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                        <Calendar
+                          mode="single"
+                          selected={createDeadline}
+                          onSelect={setCreateDeadline}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
                 <button
@@ -634,7 +689,7 @@ export default function TaskManagement() {
                 </div>
                 {selectedTask.deadline && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="w-4 h-4 text-[#00E5FF]" />
+                    <CalendarIcon className="w-4 h-4 text-[#00E5FF]" />
                     <span className="text-[#94A3B8]">Deadline:</span>
                     <span className="text-[#E5E7EB]">{new Date(selectedTask.deadline).toLocaleDateString()}</span>
                   </div>
@@ -645,13 +700,19 @@ export default function TaskManagement() {
               <div className="space-y-4 mb-6 p-4 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Status</label>
-                  <select
+                  <Select
                     value={detailStatus}
-                    onChange={(e) => setDetailStatus(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                    onValueChange={setDetailStatus}
                   >
-                    {COLUMNS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                  </select>
+                    <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                      {COLUMNS.map((c) => (
+                        <SelectItem key={c.id} value={c.id} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">{c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

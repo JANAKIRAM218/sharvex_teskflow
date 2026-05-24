@@ -94,3 +94,29 @@ Work Log:
 Stage Summary:
 - AI productivity insights feature complete
 - Team chat with real-time messaging complete
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix employee portal UI issues - department select, calendar, navbar responsiveness
+
+Work Log:
+- Analyzed uploaded screenshot with VLM to identify visual issues
+- Identified 3 main issues: department dropdown styling, missing calendar picker, navbar not responsive
+- Replaced all native <select> elements in EmployeeManagement.tsx with shadcn/ui Select components
+- Added Popover + Calendar date picker for Joining Date field in Add Employee modal
+- Replaced all native <select> elements in TaskManagement.tsx with shadcn/ui Select components
+- Added Popover + Calendar date picker for Deadline field in Create Task modal
+- Improved AppNavbar component with better responsive layout and icon indicators
+- Added safe-area-bottom padding for iOS devices
+- Added CSS fallback styling for native select options (dark background)
+- Added date input webkit calendar picker indicator styling
+- Added Radix component z-index fixes for modals
+- Fixed ESLint warning (unused eslint-disable directive)
+- All lint checks pass, dev server running correctly
+
+Stage Summary:
+- All native <select> dropdowns replaced with shadcn/ui Select (proper dark theme)
+- All date inputs replaced with Popover + Calendar date pickers
+- Employee portal navbar fully responsive with mobile bottom nav
+- CSS improvements for dark theme compatibility

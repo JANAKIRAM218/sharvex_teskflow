@@ -4,10 +4,26 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Search, Edit2, Trash2, Users, X,
-  Loader2, ChevronLeft, ChevronRight, Copy, Check
+  Loader2, ChevronLeft, ChevronRight, Copy, Check,
+  CalendarIcon, Building2, UserCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { type DateValue } from 'react-day-picker';
 
 interface Employee {
   id: string;
@@ -54,6 +70,7 @@ export default function EmployeeManagement() {
   // Add form
   const [addForm, setAddForm] = useState({ fullName: '', department: 'Engineering', designation: '', joiningDate: '' });
   const [addLoading, setAddLoading] = useState(false);
+  const [addJoinDate, setAddJoinDate] = useState<Date | undefined>(undefined);
 
   // Edit form
   const [editForm, setEditForm] = useState({ fullName: '', department: '', designation: '', status: 'active', performanceScore: 0 });
@@ -98,10 +115,11 @@ export default function EmployeeManagement() {
     }
     setAddLoading(true);
     try {
+      const joiningDate = addJoinDate ? addJoinDate.toISOString().split('T')[0] : '';
       const res = await fetch('/api/employees', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(addForm),
+        body: JSON.stringify({ ...addForm, joiningDate }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -198,6 +216,11 @@ export default function EmployeeManagement() {
     return 'bg-[rgba(239,68,68,0.15)] text-[#EF4444] border-[rgba(239,68,68,0.3)]';
   };
 
+  const formatJoinDate = (date: Date | undefined) => {
+    if (!date) return 'Pick a date';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -213,6 +236,7 @@ export default function EmployeeManagement() {
         <button
           onClick={() => {
             setAddForm({ fullName: '', department: 'Engineering', designation: '', joiningDate: '' });
+            setAddJoinDate(undefined);
             setShowAddModal(true);
           }}
           className="glow-button px-4 py-2 rounded-xl text-sm flex items-center gap-2 self-start"
@@ -234,23 +258,38 @@ export default function EmployeeManagement() {
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] placeholder-[#94A3B8]/50 text-sm focus:outline-none"
           />
         </div>
-        <select
-          value={filterDept}
-          onChange={(e) => { setFilterDept(e.target.value); setPagination((p) => ({ ...p, page: 1 })); }}
-          className="px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+        <Select
+          value={filterDept || '__all__'}
+          onValueChange={(v) => { setFilterDept(v === '__all__' ? '' : v); setPagination((p) => ({ ...p, page: 1 })); }}
         >
-          <option value="">All Departments</option>
-          {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-        </select>
-        <select
-          value={filterStatus}
-          onChange={(e) => { setFilterStatus(e.target.value); setPagination((p) => ({ ...p, page: 1 })); }}
-          className="px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+          <SelectTrigger className="w-full sm:w-[180px] bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+            <SelectValue placeholder="All Departments" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+            <SelectItem value="__all__" className="text-[#94A3B8] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)]">All Departments</SelectItem>
+            {DEPARTMENTS.map((d) => (
+              <SelectItem key={d} value={d} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)]">
+                <span className="flex items-center gap-2">
+                  <Building2 className="size-3.5 text-[#00E5FF]" />
+                  {d}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={filterStatus || '__all__'}
+          onValueChange={(v) => { setFilterStatus(v === '__all__' ? '' : v); setPagination((p) => ({ ...p, page: 1 })); }}
         >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
+          <SelectTrigger className="w-full sm:w-[150px] bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+            <SelectItem value="__all__" className="text-[#94A3B8] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)]">All Status</SelectItem>
+            <SelectItem value="active" className="text-[#00FFB2] focus:text-[#00FFB2] focus:bg-[rgba(0,255,178,0.05)]">Active</SelectItem>
+            <SelectItem value="inactive" className="text-[#EF4444] focus:text-[#EF4444] focus:bg-[rgba(239,68,68,0.05)]">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Desktop Table */}
@@ -417,7 +456,7 @@ export default function EmployeeManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border"
+              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {showCredentials && newCredentials ? (
@@ -457,14 +496,19 @@ export default function EmployeeManagement() {
               ) : (
                 <>
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-[#E5E7EB]">Add Employee</h3>
+                    <h3 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2">
+                      <UserCircle className="size-5 text-[#00FFB2]" />
+                      Add Employee
+                    </h3>
                     <button onClick={() => setShowAddModal(false)} className="text-[#94A3B8] hover:text-[#E5E7EB]">
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                   <form onSubmit={handleAdd} className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-sm text-[#94A3B8]">Full Name *</label>
+                      <label className="text-sm text-[#94A3B8]">
+                        Full Name <span className="text-[#EF4444]">*</span>
+                      </label>
                       <input
                         type="text"
                         value={addForm.fullName}
@@ -474,17 +518,32 @@ export default function EmployeeManagement() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm text-[#94A3B8]">Department *</label>
-                      <select
+                      <label className="text-sm text-[#94A3B8]">
+                        Department <span className="text-[#EF4444]">*</span>
+                      </label>
+                      <Select
                         value={addForm.department}
-                        onChange={(e) => setAddForm({ ...addForm, department: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                        onValueChange={(v) => setAddForm({ ...addForm, department: v })}
                       >
-                        {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-                      </select>
+                        <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                          <SelectValue placeholder="Select department" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                          {DEPARTMENTS.map((d) => (
+                            <SelectItem key={d} value={d} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">
+                              <span className="flex items-center gap-2">
+                                <Building2 className="size-3.5 text-[#00E5FF]" />
+                                {d}
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm text-[#94A3B8]">Designation *</label>
+                      <label className="text-sm text-[#94A3B8]">
+                        Designation <span className="text-[#EF4444]">*</span>
+                      </label>
                       <input
                         type="text"
                         value={addForm.designation}
@@ -495,12 +554,31 @@ export default function EmployeeManagement() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm text-[#94A3B8]">Joining Date</label>
-                      <input
-                        type="date"
-                        value={addForm.joiningDate}
-                        onChange={(e) => setAddForm({ ...addForm, joiningDate: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
-                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={`w-full justify-start text-left font-normal rounded-xl bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] ${
+                              !addJoinDate ? 'text-[#94A3B8]' : 'text-[#E5E7EB]'
+                            }`}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4 text-[#00E5FF]" />
+                            {formatJoinDate(addJoinDate)}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-[#111827] border-[rgba(255,255,255,0.08)]" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={addJoinDate}
+                            onSelect={(date: DateValue) => {
+                              if (date instanceof Date || date === undefined) {
+                                setAddJoinDate(date);
+                              }
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     <button
                       type="submit"
@@ -532,11 +610,14 @@ export default function EmployeeManagement() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border"
+              className="glass-card p-6 rounded-2xl w-full max-w-md neon-border max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-[#E5E7EB]">Edit Employee</h3>
+                <h3 className="text-lg font-semibold text-[#E5E7EB] flex items-center gap-2">
+                  <Edit2 className="size-5 text-[#00E5FF]" />
+                  Edit Employee
+                </h3>
                 <button onClick={() => setShowEditModal(false)} className="text-[#94A3B8] hover:text-[#E5E7EB]">
                   <X className="w-5 h-5" />
                 </button>
@@ -553,13 +634,24 @@ export default function EmployeeManagement() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Department</label>
-                  <select
+                  <Select
                     value={editForm.department}
-                    onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                    onValueChange={(v) => setEditForm({ ...editForm, department: v })}
                   >
-                    {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                    <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                      {DEPARTMENTS.map((d) => (
+                        <SelectItem key={d} value={d} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">
+                          <span className="flex items-center gap-2">
+                            <Building2 className="size-3.5 text-[#00E5FF]" />
+                            {d}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Designation</label>
@@ -572,14 +664,18 @@ export default function EmployeeManagement() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Status</label>
-                  <select
+                  <Select
                     value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                    onValueChange={(v) => setEditForm({ ...editForm, status: v })}
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
+                    <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                      <SelectItem value="active" className="text-[#00FFB2] focus:text-[#00FFB2] focus:bg-[rgba(0,255,178,0.05)]">Active</SelectItem>
+                      <SelectItem value="inactive" className="text-[#EF4444] focus:text-[#EF4444] focus:bg-[rgba(239,68,68,0.05)]">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Performance Score</label>
