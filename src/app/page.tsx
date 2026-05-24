@@ -244,7 +244,7 @@ function EmployeePortal() {
 
 export default function Home() {
   const { isAuthenticated, token, user, logout } = useAuthStore();
-  const { sidebarOpen, setCurrentPage } = useAppStore();
+  const { currentPage, sidebarOpen, setCurrentPage } = useAppStore();
 
   // Validate token on mount
   useEffect(() => {
