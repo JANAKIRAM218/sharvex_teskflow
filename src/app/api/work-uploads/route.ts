@@ -22,15 +22,20 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const employeeId = searchParams.get('employeeId') || user.id;
+    const employeeId = searchParams.get('employeeId');
     const taskId = searchParams.get('taskId');
 
     // Employees can only see their own uploads
-    if (user.role === 'employee' && user.id !== employeeId) {
+    if (user.role === 'employee' && employeeId && user.id !== employeeId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const where: any = { employeeId };
+    const where: any = {};
+    if (user.role === 'employee') {
+      where.employeeId = user.id;
+    } else if (employeeId && employeeId !== 'all') {
+      where.employeeId = employeeId;
+    }
     if (taskId) where.taskId = taskId;
 
     const uploadsRaw = await WorkUpload.find(where)
@@ -86,8 +91,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    if (!file && !title) {
-      return NextResponse.json({ error: 'Title or file is required' }, { status: 400 });
+    if (!title || !title.trim()) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    if (!file) {
+      return NextResponse.json({ error: 'File is required' }, { status: 400 });
     }
 
     let fileUrl = '';

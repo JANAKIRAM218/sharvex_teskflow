@@ -92,7 +92,8 @@ export default function WorkUploads() {
     if (!token || !user?.id) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/work-uploads?employeeId=${user.id}`, {
+      const url = user.role === 'admin' ? '/api/work-uploads' : `/api/work-uploads?employeeId=${user.id}`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -104,12 +105,13 @@ export default function WorkUploads() {
     } finally {
       setLoading(false);
     }
-  }, [token, user?.id]);
+  }, [token, user?.id, user?.role]);
 
   const fetchTasks = useCallback(async () => {
     if (!token || !user?.id) return;
     try {
-      const res = await fetch(`/api/tasks?assignedTo=${user.id}&limit=100`, {
+      const url = user.role === 'admin' ? '/api/tasks?limit=100' : `/api/tasks?assignedTo=${user.id}&limit=100`;
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -119,7 +121,7 @@ export default function WorkUploads() {
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     }
-  }, [token, user?.id]);
+  }, [token, user?.id, user?.role]);
 
   useEffect(() => {
     fetchUploads();
@@ -128,8 +130,12 @@ export default function WorkUploads() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formTitle && !formFile) {
-      toast.error('Please provide a title or file');
+    if (!formTitle.trim()) {
+      toast.error('Please enter a title');
+      return;
+    }
+    if (!formFile) {
+      toast.error('Please select a file to upload');
       return;
     }
     setUploading(true);
@@ -235,15 +241,21 @@ export default function WorkUploads() {
             <Upload className="size-7 text-[#00FFB2]" />
             Work Uploads
           </h1>
-          <p className="text-[#94A3B8] mt-1">Upload and manage your work files, screenshots, and documents</p>
+          <p className="text-[#94A3B8] mt-1">
+            {user?.role === 'admin' 
+              ? 'View and manage work files, screenshots, and documents uploaded by employees' 
+              : 'Upload and manage your work files, screenshots, and documents'}
+          </p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="glow-button px-4 py-2 rounded-xl text-sm flex items-center gap-2 self-start"
-        >
-          <Plus className="w-4 h-4" />
-          Upload Work
-        </button>
+        {user?.role !== 'admin' && (
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="glow-button px-4 py-2 rounded-xl text-sm flex items-center gap-2 self-start"
+          >
+            <Plus className="w-4 h-4" />
+            Upload Work
+          </button>
+        )}
       </motion.div>
 
       {/* Stats */}
@@ -266,10 +278,16 @@ export default function WorkUploads() {
         <motion.div variants={itemVariants} className="glass-card p-12 text-center">
           <Upload className="size-16 text-[#94A3B8] mx-auto mb-4 opacity-30" />
           <h3 className="text-lg font-medium text-[#E5E7EB] mb-2">No uploads yet</h3>
-          <p className="text-[#94A3B8] mb-4">Start uploading your work files, screenshots, and documents</p>
-          <Button onClick={() => setShowAddModal(true)} className="glow-button">
-            <Plus className="size-4 mr-2" /> Upload Work
-          </Button>
+          <p className="text-[#94A3B8] mb-4">
+            {user?.role === 'admin' 
+              ? 'No work uploads from employees yet.' 
+              : 'Start uploading your work files, screenshots, and documents'}
+          </p>
+          {user?.role !== 'admin' && (
+            <Button onClick={() => setShowAddModal(true)} className="glow-button">
+              <Plus className="size-4 mr-2" /> Upload Work
+            </Button>
+          )}
         </motion.div>
       ) : (
         <motion.div variants={containerVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -317,6 +335,11 @@ export default function WorkUploads() {
                 <h3 className="text-sm font-medium text-[#E5E7EB] line-clamp-1">{upload.title}</h3>
                 {upload.description && (
                   <p className="text-xs text-[#94A3B8] line-clamp-2 mt-1">{upload.description}</p>
+                )}
+                {upload.employee && (
+                  <p className="text-xs text-[#00FFB2] mt-2 font-medium">
+                    Uploaded by: {upload.employee.fullName}
+                  </p>
                 )}
 
                 {/* File info & actions */}

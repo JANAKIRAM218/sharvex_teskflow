@@ -242,20 +242,7 @@ export default function EmployeeSettings() {
               />
             </div>
 
-            <Separator className="bg-[rgba(255,255,255,0.08)]" />
 
-            {/* Theme Preview */}
-            <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 255, 178, 0.03)', border: '1px solid rgba(0, 255, 178, 0.1)' }}>
-              <p className="text-xs text-[#00FFB2] mb-3 font-medium">Current Theme: Dark Futuristic</p>
-              <div className="flex gap-2">
-                <div className="size-8 rounded-lg" style={{ background: '#0B0F19', border: '1px solid rgba(255,255,255,0.1)' }} />
-                <div className="size-8 rounded-lg" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }} />
-                <div className="size-8 rounded-lg bg-[#00FFB2]" />
-                <div className="size-8 rounded-lg bg-[#00E5FF]" />
-                <div className="size-8 rounded-lg" style={{ background: '#A78BFA' }} />
-                <div className="size-8 rounded-lg" style={{ background: '#F59E0B' }} />
-              </div>
-            </div>
           </div>
         </motion.div>
 

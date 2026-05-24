@@ -6,7 +6,11 @@ let socket: Socket | null = null;
 
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io('/?XTransformPort=3003', {
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const socketUrl = isLocalhost ? 'http://localhost:3003' : '/?XTransformPort=3003';
+    
+    socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true,
     });

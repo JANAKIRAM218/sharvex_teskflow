@@ -8,6 +8,7 @@ import {
   CalendarIcon, Building2, UserCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { getSocket } from '@/lib/socket';
 import {
   Select,
   SelectContent,
@@ -50,8 +51,9 @@ interface Pagination {
 const DEPARTMENTS = ['Engineering', 'Design', 'Marketing', 'Sales', 'HR', 'Finance', 'Operations'];
 
 export default function EmployeeManagement() {
-  const { token } = useAuthStore();
+  const { token, user } = useAuthStore();
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -106,6 +108,59 @@ export default function EmployeeManagement() {
   useEffect(() => {
     fetchEmployees();
   }, [fetchEmployees]);
+
+  useEffect(() => {
+    const socket = getSocket();
+
+    const handleRoomMembers = (data: { roomId: string; members: { userId: string }[] }) => {
+      if (data.roomId === 'general') {
+        setOnlineUserIds(new Set(data.members.map(m => m.userId)));
+      }
+    };
+
+    const handleUserJoined = (data: { user: { userId: string } }) => {
+      setOnlineUserIds(prev => {
+        const next = new Set(prev);
+        next.add(data.user.userId);
+        return next;
+      });
+    };
+
+    const handleUserLeft = (data: { user: { userId: string } }) => {
+      setOnlineUserIds(prev => {
+        const next = new Set(prev);
+        next.delete(data.user.userId);
+        return next;
+      });
+    };
+
+    socket.on('room-members', handleRoomMembers);
+    socket.on('user-joined', handleUserJoined);
+    socket.on('user-left', handleUserLeft);
+
+    const joinRoom = () => {
+      socket.emit('join-room', {
+        roomId: 'general',
+        userId: user?.id || 'admin',
+        userName: user?.name || 'Admin',
+        role: 'admin',
+      });
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    } else {
+      socket.on('connect', joinRoom);
+    }
+
+    return () => {
+      socket.off('room-members', handleRoomMembers);
+      socket.off('user-joined', handleUserJoined);
+      socket.off('user-left', handleUserLeft);
+      socket.off('connect', joinRoom);
+      socket.emit('leave-room', { roomId: 'general' });
+    };
+  }, [user]);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,6 +270,8 @@ export default function EmployeeManagement() {
     if (status === 'active') return 'bg-[rgba(0,255,178,0.15)] text-[#00FFB2] border-[rgba(0,255,178,0.3)]';
     return 'bg-[rgba(239,68,68,0.15)] text-[#EF4444] border-[rgba(239,68,68,0.3)]';
   };
+
+  const isEmpOnline = (empId: string) => onlineUserIds.has(empId);
 
   const formatJoinDate = (date: Date | undefined) => {
     if (!date) return 'Pick a date';
@@ -342,8 +399,9 @@ export default function EmployeeManagement() {
                     <td className="py-3 px-4 text-sm text-[#E5E7EB]">{emp.department}</td>
                     <td className="py-3 px-4 text-sm text-[#E5E7EB]">{emp.designation}</td>
                     <td className="py-3 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(emp.status)}`}>
-                        {emp.status}
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor(isEmpOnline(emp.id) ? 'active' : 'inactive')}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isEmpOnline(emp.id) ? 'bg-[#00FFB2] animate-pulse shadow-[0_0_8px_rgba(0,255,178,0.6)]' : 'bg-[#EF4444]'}`} />
+                        {isEmpOnline(emp.id) ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-sm text-[#94A3B8]">{emp._count.assignedTasks}</td>
@@ -398,8 +456,9 @@ export default function EmployeeManagement() {
                     <p className="text-xs text-[#94A3B8]">@{emp.username} &middot; {emp.employeeCode}</p>
                   </div>
                 </div>
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusColor(emp.status)}`}>
-                  {emp.status}
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${statusColor(isEmpOnline(emp.id) ? 'active' : 'inactive')}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isEmpOnline(emp.id) ? 'bg-[#00FFB2] animate-pulse shadow-[0_0_8px_rgba(0,255,178,0.6)]' : 'bg-[#EF4444]'}`} />
+                  {isEmpOnline(emp.id) ? 'Active' : 'Inactive'}
                 </span>
               </div>
               <div className="mt-3 flex items-center justify-between text-xs text-[#94A3B8]">
