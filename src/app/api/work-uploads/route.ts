@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { WorkUpload } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
@@ -14,6 +15,7 @@ function getAuthUser(request: Request) {
 // GET - List work uploads for an employee
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -28,18 +30,32 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const where: Record<string, unknown> = { employeeId };
+    const where: any = { employeeId };
     if (taskId) where.taskId = taskId;
 
-    const uploads = await db.workUpload.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        employee: {
-          select: { fullName: true, employeeCode: true },
-        },
-      },
-    });
+    const uploadsRaw = await WorkUpload.find(where)
+      .sort({ createdAt: -1 })
+      .populate('employeeId', 'fullName employeeCode')
+      .lean();
+
+    const uploads = uploadsRaw.map((up) => ({
+      id: up._id,
+      employeeId: up.employeeId && typeof up.employeeId === 'object' ? (up.employeeId as any)._id : up.employeeId,
+      taskId: up.taskId,
+      title: up.title,
+      description: up.description,
+      fileUrl: up.fileUrl,
+      fileName: up.fileName,
+      fileType: up.fileType,
+      fileSize: up.fileSize,
+      category: up.category,
+      createdAt: up.createdAt,
+      updatedAt: up.updatedAt,
+      employee: up.employeeId && typeof up.employeeId === 'object' ? {
+        fullName: (up.employeeId as any).fullName,
+        employeeCode: (up.employeeId as any).employeeCode,
+      } : null,
+    }));
 
     return NextResponse.json({ uploads });
   } catch (error) {
@@ -51,6 +67,7 @@ export async function GET(request: Request) {
 // POST - Create a work upload
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -99,19 +116,32 @@ export async function POST(request: Request) {
       fileSize = file.size;
     }
 
-    const upload = await db.workUpload.create({
-      data: {
-        employeeId,
-        taskId: taskId || null,
-        title: title || fileName,
-        description,
-        fileUrl,
-        fileName,
-        fileType,
-        fileSize,
-        category,
-      },
+    const newUpload = await WorkUpload.create({
+      employeeId,
+      taskId: taskId || null,
+      title: title || fileName,
+      description,
+      fileUrl,
+      fileName,
+      fileType,
+      fileSize,
+      category,
     });
+
+    const upload = {
+      id: newUpload._id,
+      employeeId: newUpload.employeeId,
+      taskId: newUpload.taskId,
+      title: newUpload.title,
+      description: newUpload.description,
+      fileUrl: newUpload.fileUrl,
+      fileName: newUpload.fileName,
+      fileType: newUpload.fileType,
+      fileSize: newUpload.fileSize,
+      category: newUpload.category,
+      createdAt: newUpload.createdAt,
+      updatedAt: newUpload.updatedAt,
+    };
 
     return NextResponse.json({ upload }, { status: 201 });
   } catch (error) {

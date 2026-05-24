@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Notification } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 
 function getAuthUser(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -12,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -26,15 +27,27 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const where: Prisma.NotificationWhereInput = {
+    const where: any = {
       userId,
       userRole,
     };
 
-    const notifications = await db.notification.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
+    const notificationsRaw = await Notification.find(where)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const notifications = notificationsRaw.map((n) => ({
+      id: n._id,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      userId: n.userId,
+      userRole: n.userRole,
+      isRead: n.isRead,
+      relatedId: n.relatedId,
+      createdAt: n.createdAt,
+      updatedAt: n.updatedAt,
+    }));
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -47,6 +60,7 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -59,21 +73,16 @@ export async function PUT(request: Request) {
       // Employees can only mark their own notifications
       const targetUserId = user.role === 'employee' ? user.id : userId;
 
-      await db.notification.updateMany({
-        where: {
-          userId: targetUserId,
-          isRead: false,
-        },
-        data: { isRead: true },
-      });
+      await Notification.updateMany(
+        { userId: targetUserId, isRead: false },
+        { isRead: true }
+      );
 
       return NextResponse.json({ message: 'All notifications marked as read' });
     }
 
     if (notificationId) {
-      const notification = await db.notification.findUnique({
-        where: { id: notificationId },
-      });
+      const notification = await Notification.findById(notificationId);
 
       if (!notification) {
         return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
@@ -84,10 +93,7 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
-      await db.notification.update({
-        where: { id: notificationId },
-        data: { isRead: true },
-      });
+      await Notification.findByIdAndUpdate(notificationId, { isRead: true });
 
       return NextResponse.json({ message: 'Notification marked as read' });
     }

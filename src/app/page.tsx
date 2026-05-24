@@ -220,7 +220,7 @@ function AppNavbar() {
   const isAdmin = user?.role === 'admin';
   const navItems = isAdmin ? ADMIN_NAV : EMPLOYEE_NAV;
   const currentLabel = navItems.find(n => n.id === currentPage)?.label || 'Dashboard';
-  const currentIcon = navItems.find(n => n.id === currentPage)?.icon;
+  const CurrentIcon = navItems.find(n => n.id === currentPage)?.icon;
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 lg:px-6 h-14 sm:h-16 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[rgba(255,255,255,0.06)]">
@@ -233,8 +233,8 @@ function AppNavbar() {
           <Menu className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2 min-w-0">
-          {currentIcon && (
-            <currentIcon className="w-4 h-4 text-[#00FFB2] shrink-0 hidden sm:block" />
+          {CurrentIcon && (
+            <CurrentIcon className="w-4 h-4 text-[#00FFB2] shrink-0 hidden sm:block" />
           )}
           <div className="min-w-0">
             <h1 className="text-sm sm:text-base lg:text-lg font-semibold text-[#E5E7EB] truncate">
@@ -247,12 +247,6 @@ function AppNavbar() {
         </div>
       </div>
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {/* Quick search - hidden on mobile */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-[#94A3B8] text-xs">
-          <Search className="w-3.5 h-3.5" />
-          <span>Search...</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-[rgba(255,255,255,0.06)] text-[10px] font-mono">⌘K</kbd>
-        </div>
         <span className="text-xs text-[#94A3B8] hidden sm:block">
           Hi, <span className="text-[#00FFB2] font-medium">{user?.name || 'User'}</span>
         </span>

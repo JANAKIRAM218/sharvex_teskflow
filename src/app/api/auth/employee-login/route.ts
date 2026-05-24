@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee } from '@/lib/models';
 import { comparePassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const { username, employeeCode, password } = await request.json();
 
     if (!username || !employeeCode || !password) {
       return NextResponse.json({ error: 'Username, employee code, and password are required' }, { status: 400 });
     }
 
-    const employee = await db.employee.findFirst({
-      where: { username, employeeCode },
-    });
+    const employee = await Employee.findOne({ username, employeeCode });
 
     if (!employee) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     const token = generateToken({
-      id: employee.id,
+      id: employee._id,
       role: 'employee',
       username: employee.username,
       employeeCode: employee.employeeCode,
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       token,
       user: {
-        id: employee.id,
+        id: employee._id,
         name: employee.fullName,
         username: employee.username,
         employeeCode: employee.employeeCode,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Admin, Employee, ChatMessage } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 
 function getAuthUser(request: Request) {
@@ -11,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,16 +23,26 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const before = searchParams.get('before') || '';
 
-    const where: { roomId: string; createdAt?: { lt: Date } } = { roomId };
+    const where: any = { roomId };
     if (before) {
-      where.createdAt = { lt: new Date(before) };
+      where.createdAt = { $lt: new Date(before) };
     }
 
-    const messages = await db.chatMessage.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+    const messagesRaw = await ChatMessage.find(where)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const messages = messagesRaw.map((msg) => ({
+      id: msg._id,
+      senderId: msg.senderId,
+      senderName: msg.senderName,
+      senderRole: msg.senderRole,
+      content: msg.content,
+      roomId: msg.roomId,
+      createdAt: msg.createdAt,
+      updatedAt: msg.updatedAt,
+    }));
 
     // Return in chronological order
     return NextResponse.json({ messages: messages.reverse() });
@@ -42,6 +54,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -57,22 +70,31 @@ export async function POST(request: Request) {
     // Get sender name based on role
     let senderName = '';
     if (user.role === 'admin') {
-      const admin = await db.admin.findUnique({ where: { id: user.id } });
+      const admin = await Admin.findById(user.id);
       senderName = admin?.name || 'Admin';
     } else {
-      const employee = await db.employee.findUnique({ where: { id: user.id } });
+      const employee = await Employee.findById(user.id);
       senderName = employee?.fullName || 'Employee';
     }
 
-    const message = await db.chatMessage.create({
-      data: {
-        senderId: user.id,
-        senderName,
-        senderRole: user.role,
-        content: content.trim(),
-        roomId: roomId || 'general',
-      },
+    const newMessage = await ChatMessage.create({
+      senderId: user.id,
+      senderName,
+      senderRole: user.role,
+      content: content.trim(),
+      roomId: roomId || 'general',
     });
+
+    const message = {
+      id: newMessage._id,
+      senderId: newMessage.senderId,
+      senderName: newMessage.senderName,
+      senderRole: newMessage.senderRole,
+      content: newMessage.content,
+      roomId: newMessage.roomId,
+      createdAt: newMessage.createdAt,
+      updatedAt: newMessage.updatedAt,
+    };
 
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {

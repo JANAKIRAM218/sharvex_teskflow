@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Task, Notification } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 
 function getAuthUser(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -12,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
     const status = searchParams.get('status') || '';
     const priority = searchParams.get('priority') || '';
 
-    const where: Prisma.TaskWhereInput = {};
+    const where: any = {};
 
     if (assignedTo) {
       where.assignedTo = assignedTo;
@@ -43,24 +44,34 @@ export async function GET(request: Request) {
       where.priority = priority;
     }
 
-    const total = await db.task.count({ where });
-    const tasks = await db.task.findMany({
-      where,
-      include: {
-        employee: {
-          select: {
-            id: true,
-            fullName: true,
-            department: true,
-            designation: true,
-            profileImage: true,
-          },
-        },
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-    });
+    const total = await Task.countDocuments(where);
+    const tasksRaw = await Task.find(where)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate('assignedTo', 'fullName department designation profileImage')
+      .lean();
+
+    const tasks = tasksRaw.map((task) => ({
+      id: task._id,
+      title: task.title,
+      description: task.description,
+      assignedTo: task.assignedTo && typeof task.assignedTo === 'object' ? (task.assignedTo as any)._id : task.assignedTo,
+      assignedBy: task.assignedBy,
+      priority: task.priority,
+      deadline: task.deadline,
+      progress: task.progress,
+      status: task.status,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt,
+      employee: task.assignedTo && typeof task.assignedTo === 'object' ? {
+        id: (task.assignedTo as any)._id,
+        fullName: (task.assignedTo as any).fullName,
+        department: (task.assignedTo as any).department,
+        designation: (task.assignedTo as any).designation,
+        profileImage: (task.assignedTo as any).profileImage,
+      } : null,
+    }));
 
     return NextResponse.json({
       tasks,
@@ -79,6 +90,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
@@ -92,46 +104,52 @@ export async function POST(request: Request) {
     }
 
     // Verify employee exists
-    const employee = await db.employee.findUnique({ where: { id: assignedTo } });
+    const employee = await Employee.findById(assignedTo);
     if (!employee) {
       return NextResponse.json({ error: 'Assigned employee not found' }, { status: 404 });
     }
 
-    const task = await db.task.create({
-      data: {
-        title,
-        description: description || null,
-        assignedTo,
-        assignedBy: user.id,
-        priority: priority || 'medium',
-        deadline: deadline ? new Date(deadline) : null,
-        status: 'pending',
-        progress: 0,
-      },
-      include: {
-        employee: {
-          select: {
-            id: true,
-            fullName: true,
-            department: true,
-            designation: true,
-          },
-        },
-      },
+    const newTask = await Task.create({
+      title,
+      description: description || null,
+      assignedTo,
+      assignedBy: user.id,
+      priority: priority || 'medium',
+      deadline: deadline ? new Date(deadline) : null,
+      status: 'pending',
+      progress: 0,
     });
 
     // Create notification for assigned employee
-    await db.notification.create({
-      data: {
-        title: 'New Task Assigned',
-        message: `You have been assigned a new task: "${title}"`,
-        type: 'task',
-        userId: assignedTo,
-        userRole: 'employee',
-        relatedId: task.id,
-        isRead: false,
-      },
+    await Notification.create({
+      title: 'New Task Assigned',
+      message: `You have been assigned a new task: "${title}"`,
+      type: 'task',
+      userId: assignedTo,
+      userRole: 'employee',
+      relatedId: newTask._id,
+      isRead: false,
     });
+
+    const task = {
+      id: newTask._id,
+      title: newTask.title,
+      description: newTask.description,
+      assignedTo: newTask.assignedTo,
+      assignedBy: newTask.assignedBy,
+      priority: newTask.priority,
+      deadline: newTask.deadline,
+      progress: newTask.progress,
+      status: newTask.status,
+      createdAt: newTask.createdAt,
+      updatedAt: newTask.updatedAt,
+      employee: {
+        id: employee._id,
+        fullName: employee.fullName,
+        department: employee.department,
+        designation: employee.designation,
+      },
+    };
 
     return NextResponse.json({ task }, { status: 201 });
   } catch (error) {

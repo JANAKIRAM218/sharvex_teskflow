@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Task, Notification } from '@/lib/models';
 import { verifyToken, hashPassword, generateEmployeeCode, generateUsername, generateDefaultPassword } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 
 function getAuthUser(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -12,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -24,14 +25,14 @@ export async function GET(request: Request) {
     const department = searchParams.get('department') || '';
     const status = searchParams.get('status') || '';
 
-    const where: Prisma.EmployeeWhereInput = {};
+    const where: any = {};
 
     if (search) {
-      where.OR = [
-        { fullName: { contains: search } },
-        { username: { contains: search } },
-        { employeeCode: { contains: search } },
-        { designation: { contains: search } },
+      where.$or = [
+        { fullName: { $regex: search, $options: 'i' } },
+        { username: { $regex: search, $options: 'i' } },
+        { employeeCode: { $regex: search, $options: 'i' } },
+        { designation: { $regex: search, $options: 'i' } },
       ];
     }
 
@@ -43,29 +44,33 @@ export async function GET(request: Request) {
       where.status = status;
     }
 
-    const total = await db.employee.count({ where });
-    const employees = await db.employee.findMany({
-      where,
-      select: {
-        id: true,
-        fullName: true,
-        username: true,
-        employeeCode: true,
-        department: true,
-        designation: true,
-        profileImage: true,
-        joiningDate: true,
-        status: true,
-        performanceScore: true,
-        createdAt: true,
-        _count: {
-          select: { assignedTasks: true },
-        },
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-    });
+    const total = await Employee.countDocuments(where);
+    const employeesRaw = await Employee.find(where)
+      .select('fullName username employeeCode department designation profileImage joiningDate status performanceScore createdAt')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const employees = await Promise.all(
+      employeesRaw.map(async (emp) => {
+        const assignedTasksCount = await Task.countDocuments({ assignedTo: emp._id });
+        return {
+          id: emp._id,
+          fullName: emp.fullName,
+          username: emp.username,
+          employeeCode: emp.employeeCode,
+          department: emp.department,
+          designation: emp.designation,
+          profileImage: emp.profileImage,
+          joiningDate: emp.joiningDate,
+          status: emp.status,
+          performanceScore: emp.performanceScore,
+          createdAt: emp.createdAt,
+          _count: { assignedTasks: assignedTasksCount },
+        };
+      })
+    );
 
     return NextResponse.json({
       employees,
@@ -84,6 +89,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
@@ -96,42 +102,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Full name, department, and designation are required' }, { status: 400 });
     }
 
-    const employeeCount = await db.employee.count();
+    const employeeCount = await Employee.countDocuments();
     const username = generateUsername(fullName);
     const employeeCode = generateEmployeeCode(employeeCount);
     const defaultPassword = generateDefaultPassword();
     const hashedPassword = await hashPassword(defaultPassword);
 
-    const employee = await db.employee.create({
-      data: {
-        fullName,
-        username,
-        employeeCode,
-        password: hashedPassword,
-        department,
-        designation,
-        profileImage: profileImage || null,
-        joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
-        performanceScore: performanceScore || 0,
-        status: 'active',
-      },
+    const employee = await Employee.create({
+      fullName,
+      username,
+      employeeCode,
+      password: hashedPassword,
+      department,
+      designation,
+      profileImage: profileImage || null,
+      joiningDate: joiningDate ? new Date(joiningDate) : new Date(),
+      performanceScore: performanceScore || 0,
+      status: 'active',
     });
 
     // Create notification for the new employee
-    await db.notification.create({
-      data: {
-        title: 'Welcome to Task Platform',
-        message: `Welcome ${fullName}! Your account has been created successfully.`,
-        type: 'info',
-        userId: employee.id,
-        userRole: 'employee',
-        isRead: false,
-      },
+    await Notification.create({
+      title: 'Welcome to Task Platform',
+      message: `Welcome ${fullName}! Your account has been created successfully.`,
+      type: 'info',
+      userId: employee._id,
+      userRole: 'employee',
+      isRead: false,
     });
 
     return NextResponse.json({
       employee: {
-        id: employee.id,
+        id: employee._id,
         fullName: employee.fullName,
         username: employee.username,
         employeeCode: employee.employeeCode,

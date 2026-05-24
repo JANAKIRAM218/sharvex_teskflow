@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Attendance } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
 
 function getAuthUser(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -12,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
     const employeeId = searchParams.get('employeeId') || '';
     const date = searchParams.get('date') || '';
 
-    const where: Prisma.AttendanceWhereInput = {};
+    const where: any = {};
 
     // Employees can only see their own attendance
     if (user.role === 'employee') {
@@ -35,25 +36,30 @@ export async function GET(request: Request) {
       const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
       const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
       where.date = {
-        gte: startOfDay,
-        lt: endOfDay,
+        $gte: startOfDay,
+        $lt: endOfDay,
       };
     }
 
-    const records = await db.attendance.findMany({
-      where,
-      include: {
-        employee: {
-          select: {
-            id: true,
-            fullName: true,
-            department: true,
-            profileImage: true,
-          },
-        },
-      },
-      orderBy: { date: 'desc' },
-    });
+    const recordsRaw = await Attendance.find(where)
+      .sort({ date: -1 })
+      .populate('employeeId', 'fullName department profileImage')
+      .lean();
+
+    const records = recordsRaw.map((rec) => ({
+      id: rec._id,
+      employeeId: rec.employeeId && typeof rec.employeeId === 'object' ? (rec.employeeId as any)._id : rec.employeeId,
+      clockIn: rec.clockIn,
+      clockOut: rec.clockOut,
+      date: rec.date,
+      status: rec.status,
+      employee: rec.employeeId && typeof rec.employeeId === 'object' ? {
+        id: (rec.employeeId as any)._id,
+        fullName: (rec.employeeId as any).fullName,
+        department: (rec.employeeId as any).department,
+        profileImage: (rec.employeeId as any).profileImage,
+      } : null,
+    }));
 
     return NextResponse.json({ records });
   } catch (error) {
@@ -64,6 +70,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -78,7 +85,7 @@ export async function POST(request: Request) {
     }
 
     // Check if employee exists
-    const employee = await db.employee.findUnique({ where: { id: targetEmployeeId } });
+    const employee = await Employee.findById(targetEmployeeId);
     if (!employee) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
@@ -88,13 +95,11 @@ export async function POST(request: Request) {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
-    const existingRecord = await db.attendance.findFirst({
-      where: {
-        employeeId: targetEmployeeId,
-        date: {
-          gte: startOfDay,
-          lt: endOfDay,
-        },
+    const existingRecord = await Attendance.findOne({
+      employeeId: targetEmployeeId,
+      date: {
+        $gte: startOfDay,
+        $lt: endOfDay,
       },
     });
 
@@ -102,14 +107,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Already clocked in today' }, { status: 400 });
     }
 
-    const attendance = await db.attendance.create({
-      data: {
-        employeeId: targetEmployeeId,
-        clockIn: new Date(),
-        date: new Date(),
-        status: 'present',
-      },
+    const newRecord = await Attendance.create({
+      employeeId: targetEmployeeId,
+      clockIn: new Date(),
+      date: new Date(),
+      status: 'present',
     });
+
+    const attendance = {
+      id: newRecord._id,
+      employeeId: newRecord.employeeId,
+      clockIn: newRecord.clockIn,
+      clockOut: newRecord.clockOut,
+      date: newRecord.date,
+      status: newRecord.status,
+    };
 
     return NextResponse.json({ attendance }, { status: 201 });
   } catch (error) {
@@ -120,6 +132,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -138,13 +151,11 @@ export async function PUT(request: Request) {
     const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
-    const existingRecord = await db.attendance.findFirst({
-      where: {
-        employeeId: targetEmployeeId,
-        date: {
-          gte: startOfDay,
-          lt: endOfDay,
-        },
+    const existingRecord = await Attendance.findOne({
+      employeeId: targetEmployeeId,
+      date: {
+        $gte: startOfDay,
+        $lt: endOfDay,
       },
     });
 
@@ -156,10 +167,20 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Already clocked out today' }, { status: 400 });
     }
 
-    const attendance = await db.attendance.update({
-      where: { id: existingRecord.id },
-      data: { clockOut: new Date() },
-    });
+    const updatedRecord = await Attendance.findByIdAndUpdate(
+      existingRecord._id,
+      { clockOut: new Date() },
+      { new: true }
+    );
+
+    const attendance = {
+      id: updatedRecord._id,
+      employeeId: updatedRecord.employeeId,
+      clockIn: updatedRecord.clockIn,
+      clockOut: updatedRecord.clockOut,
+      date: updatedRecord.date,
+      status: updatedRecord.status,
+    };
 
     return NextResponse.json({ attendance });
   } catch (error) {

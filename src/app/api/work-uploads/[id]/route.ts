@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { WorkUpload } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 
 function getAuthUser(request: Request) {
@@ -14,13 +15,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
-    const upload = await db.workUpload.findUnique({ where: { id } });
+    const upload = await WorkUpload.findById(id);
 
     if (!upload) {
       return NextResponse.json({ error: 'Upload not found' }, { status: 404 });
@@ -31,7 +33,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await db.workUpload.delete({ where: { id } });
+    await WorkUpload.findByIdAndDelete(id);
 
     return NextResponse.json({ message: 'Upload deleted successfully' });
   } catch (error) {

@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Task } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const authHeader = request.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -16,36 +18,41 @@ export async function POST(request: Request) {
     }
 
     // Gather analytics data
-    const totalEmployees = await db.employee.count();
-    const totalTasks = await db.task.count();
-    const completedTasks = await db.task.count({ where: { status: 'completed' } });
-    const pendingTasks = await db.task.count({ where: { status: 'pending' } });
-    const inProgressTasks = await db.task.count({ where: { status: 'in-progress' } });
-    const overdueTasks = await db.task.count({
-      where: {
-        deadline: { lt: new Date() },
-        status: { not: 'completed' },
-      },
+    const totalEmployees = await Employee.countDocuments();
+    const totalTasks = await Task.countDocuments();
+    const completedTasks = await Task.countDocuments({ status: 'completed' });
+    const pendingTasks = await Task.countDocuments({ status: 'pending' });
+    const inProgressTasks = await Task.countDocuments({ status: 'in-progress' });
+    const overdueTasks = await Task.countDocuments({
+      deadline: { $lt: new Date() },
+      status: { $ne: 'completed' },
     });
 
-    const employees = await db.employee.findMany({
-      select: {
-        id: true,
-        fullName: true,
-        department: true,
-        performanceScore: true,
-        assignedTasks: {
-          select: {
-            status: true,
-            progress: true,
-            priority: true,
-            deadline: true,
-          },
-        },
-      },
-    });
+    const employeesRaw = await Employee.find()
+      .select('fullName department performanceScore')
+      .lean();
 
-    const highPriorityTasks = await db.task.count({ where: { priority: 'high' } });
+    const employees = await Promise.all(
+      employeesRaw.map(async (emp) => {
+        const tasks = await Task.find({ assignedTo: emp._id })
+          .select('status progress priority deadline')
+          .lean();
+        return {
+          id: emp._id,
+          fullName: emp.fullName,
+          department: emp.department,
+          performanceScore: emp.performanceScore,
+          assignedTasks: tasks.map((t) => ({
+            status: t.status,
+            progress: t.progress,
+            priority: t.priority,
+            deadline: t.deadline,
+          })),
+        };
+      })
+    );
+
+    const highPriorityTasks = await Task.countDocuments({ priority: 'high' });
 
     // Calculate metrics
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -58,7 +65,7 @@ export async function POST(request: Request) {
     const atRiskEmployees = employees
       .filter((e) => {
         const overdueCount = e.assignedTasks.filter(
-          (t) => t.status !== 'completed' && new Date(t.deadline) < new Date()
+          (t) => t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date()
         ).length;
         return e.performanceScore < 60 || overdueCount >= 2;
       })
@@ -154,7 +161,7 @@ export async function POST(request: Request) {
     const latePrediction = employees
       .flatMap((e) =>
         e.assignedTasks
-          .filter((t) => t.status !== 'completed' && t.progress < 50 && new Date(t.deadline) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000))
+          .filter((t) => t.status !== 'completed' && t.progress < 50 && t.deadline && new Date(t.deadline) < new Date(Date.now() + 3 * 24 * 60 * 60 * 1000))
           .map((t) => ({
             employee: e.fullName,
             taskProgress: t.progress,

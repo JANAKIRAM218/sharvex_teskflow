@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Task } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 
 function getAuthUser(request: Request) {
@@ -11,6 +12,7 @@ function getAuthUser(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -20,50 +22,58 @@ export async function GET(request: Request) {
     const isAdmin = user.role === 'admin';
 
     // Total counts
-    const totalEmployees = await db.employee.count();
-    const totalTasks = await db.task.count();
-    const activeTasks = await db.task.count({ where: { status: 'in-progress' } });
-    const completedTasks = await db.task.count({ where: { status: 'completed' } });
-    const pendingTasks = await db.task.count({ where: { status: 'pending' } });
+    const totalEmployees = await Employee.countDocuments();
+    const totalTasks = await Task.countDocuments();
+    const activeTasks = await Task.countDocuments({ status: 'in-progress' });
+    const completedTasks = await Task.countDocuments({ status: 'completed' });
+    const pendingTasks = await Task.countDocuments({ status: 'pending' });
 
     // Tasks by status
-    const tasksByStatusRaw = await db.task.groupBy({
-      by: ['status'],
-      _count: { status: true },
-    });
+    const tasksByStatusRaw = await Task.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
 
     const tasksByStatus: Record<string, number> = {};
     for (const item of tasksByStatusRaw) {
-      tasksByStatus[item.status] = item._count.status;
+      if (item._id) {
+        tasksByStatus[item._id] = item.count;
+      }
     }
 
     // Tasks by priority
-    const tasksByPriorityRaw = await db.task.groupBy({
-      by: ['priority'],
-      _count: { priority: true },
-    });
+    const tasksByPriorityRaw = await Task.aggregate([
+      { $group: { _id: "$priority", count: { $sum: 1 } } }
+    ]);
 
     const tasksByPriority: Record<string, number> = {};
     for (const item of tasksByPriorityRaw) {
-      tasksByPriority[item.priority] = item._count.priority;
+      if (item._id) {
+        tasksByPriority[item._id] = item.count;
+      }
     }
 
     // Employee performance rankings
-    const employeePerformance = await db.employee.findMany({
-      where: { status: 'active' },
-      select: {
-        id: true,
-        fullName: true,
-        department: true,
-        performanceScore: true,
-        profileImage: true,
-        _count: {
-          select: { assignedTasks: true },
-        },
-      },
-      orderBy: { performanceScore: 'desc' },
-      take: 10,
-    });
+    const activeEmployees = await Employee.find({ status: 'active' })
+      .select('fullName department performanceScore profileImage')
+      .sort({ performanceScore: -1 })
+      .limit(10)
+      .lean();
+
+    const employeePerformance = await Promise.all(
+      activeEmployees.map(async (emp) => {
+        const assignedCount = await Task.countDocuments({ assignedTo: emp._id });
+        return {
+          id: emp._id,
+          fullName: emp.fullName,
+          department: emp.department,
+          performanceScore: emp.performanceScore,
+          profileImage: emp.profileImage,
+          _count: {
+            assignedTasks: assignedCount,
+          },
+        };
+      })
+    );
 
     // Weekly task completion data (last 7 days)
     const weeklyData = [];
@@ -73,22 +83,18 @@ export async function GET(request: Request) {
       const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
       const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 
-      const completed = await db.task.count({
-        where: {
-          status: 'completed',
-          updatedAt: {
-            gte: startOfDay,
-            lt: endOfDay,
-          },
+      const completed = await Task.countDocuments({
+        status: 'completed',
+        updatedAt: {
+          $gte: startOfDay,
+          $lt: endOfDay,
         },
       });
 
-      const created = await db.task.count({
-        where: {
-          createdAt: {
-            gte: startOfDay,
-            lt: endOfDay,
-          },
+      const created = await Task.countDocuments({
+        createdAt: {
+          $gte: startOfDay,
+          $lt: endOfDay,
         },
       });
 
@@ -101,22 +107,21 @@ export async function GET(request: Request) {
     }
 
     // Department distribution
-    const departmentDist = await db.employee.groupBy({
-      by: ['department'],
-      _count: { department: true },
-    });
+    const departmentDist = await Employee.aggregate([
+      { $group: { _id: "$department", count: { $sum: 1 } } }
+    ]);
 
     const departments = departmentDist.map((d) => ({
-      department: d.department,
-      count: d._count.department,
+      department: d._id,
+      count: d.count,
     }));
 
     // For employees: only return their own task stats
     if (!isAdmin) {
-      const myTasks = await db.task.count({ where: { assignedTo: user.id } });
-      const myCompleted = await db.task.count({ where: { assignedTo: user.id, status: 'completed' } });
-      const myPending = await db.task.count({ where: { assignedTo: user.id, status: 'pending' } });
-      const myInProgress = await db.task.count({ where: { assignedTo: user.id, status: 'in-progress' } });
+      const myTasks = await Task.countDocuments({ assignedTo: user.id });
+      const myCompleted = await Task.countDocuments({ assignedTo: user.id, status: 'completed' });
+      const myPending = await Task.countDocuments({ assignedTo: user.id, status: 'pending' });
+      const myInProgress = await Task.countDocuments({ assignedTo: user.id, status: 'in-progress' });
 
       return NextResponse.json({
         totalEmployees,

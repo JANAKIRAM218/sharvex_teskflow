@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Admin } from '@/lib/models';
 import { comparePassword, generateToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    await connectToDatabase();
     const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
 
-    const admin = await db.admin.findUnique({ where: { email } });
+    const admin = await Admin.findOne({ email });
     if (!admin) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
@@ -20,12 +22,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const token = generateToken({ id: admin.id, role: 'admin', email: admin.email });
+    const token = generateToken({ id: admin._id, role: 'admin', email: admin.email });
 
     return NextResponse.json({
       token,
       user: {
-        id: admin.id,
+        id: admin._id,
         name: admin.name,
         email: admin.email,
         role: admin.role,

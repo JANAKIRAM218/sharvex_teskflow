@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { connectToDatabase } from '@/lib/mongodb';
+import { Employee, Task, Attendance, WorkUpload } from '@/lib/models';
 import { verifyToken } from '@/lib/auth';
 
 function getAuthUser(request: Request) {
@@ -14,28 +15,45 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { id } = await params;
-    const employee = await db.employee.findUnique({
-      where: { id },
-      include: {
-        assignedTasks: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
+    const employee = await Employee.findById(id).lean();
 
     if (!employee) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    const { password: _password, ...employeeData } = employee;
+    const assignedTasksRaw = await Task.find({ assignedTo: id })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json({ employee: employeeData });
+    const assignedTasks = assignedTasksRaw.map((t) => ({
+      id: t._id,
+      title: t.title,
+      description: t.description,
+      assignedTo: t.assignedTo,
+      assignedBy: t.assignedBy,
+      priority: t.priority,
+      deadline: t.deadline,
+      progress: t.progress,
+      status: t.status,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+    }));
+
+    const { password: _password, ...employeeData } = employee as any;
+    const employeeDataWithTasks = {
+      ...employeeData,
+      id: employee._id,
+      assignedTasks,
+    };
+
+    return NextResponse.json({ employee: employeeDataWithTasks });
   } catch (error) {
     console.error('Get employee error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -47,6 +65,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -63,7 +82,7 @@ export async function PUT(
       }
     }
 
-    const existing = await db.employee.findUnique({ where: { id } });
+    const existing = await Employee.findById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
@@ -81,12 +100,9 @@ export async function PUT(
       updateData.password = await hashPassword(password);
     }
 
-    const employee = await db.employee.update({
-      where: { id },
-      data: updateData,
-    });
-
-    const { password: _password, ...employeeData } = employee;
+    const employee = await Employee.findByIdAndUpdate(id, updateData, { new: true }).lean();
+    const { password: _password, ...employeeData } = employee as any;
+    employeeData.id = employee._id;
 
     return NextResponse.json({ employee: employeeData });
   } catch (error) {
@@ -100,18 +116,24 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await connectToDatabase();
     const user = getAuthUser(request);
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 });
     }
 
     const { id } = await params;
-    const existing = await db.employee.findUnique({ where: { id } });
+    const existing = await Employee.findById(id);
     if (!existing) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    await db.employee.delete({ where: { id } });
+    await Employee.findByIdAndDelete(id);
+
+    // Replicate Prisma Cascade Deletes
+    await Task.deleteMany({ assignedTo: id });
+    await Attendance.deleteMany({ employeeId: id });
+    await WorkUpload.deleteMany({ employeeId: id });
 
     return NextResponse.json({ message: 'Employee deleted successfully' });
   } catch (error) {
