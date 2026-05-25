@@ -240,7 +240,6 @@ export default function EmployeeDashboard() {
     return new Date(dateStr).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true,
     });
   };
 
@@ -514,7 +513,7 @@ export default function EmployeeDashboard() {
                     <div className="text-right">
                       <p className="text-xs text-[#94A3B8]">Deadline</p>
                       <p className="text-xs text-[#E5E7EB] font-mono">
-                        {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                        {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   )}

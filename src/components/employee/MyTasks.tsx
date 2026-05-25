@@ -387,8 +387,8 @@ export default function MyTasks() {
                             {isOverdue 
                               ? `${Math.abs(daysLeft!)}d overdue` 
                               : isUrgent 
-                              ? `${daysLeft}d left (${new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })})` 
-                              : new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+                              ? `${daysLeft}d left (${new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })})` 
+                              : new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                             }
                           </span>
                         )}
@@ -441,7 +441,7 @@ export default function MyTasks() {
                     <p className="text-xs text-[#94A3B8] mb-1">Deadline</p>
                     <p className="text-sm text-[#E5E7EB]">
                       {selectedTask.deadline 
-                        ? new Date(selectedTask.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) 
+                        ? new Date(selectedTask.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
                         : 'No deadline'}
                     </p>
                   </div>
