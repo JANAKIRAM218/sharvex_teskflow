@@ -131,7 +131,10 @@ export async function DELETE(
     await Employee.findByIdAndDelete(id);
 
     // Replicate Prisma Cascade Deletes
-    await Task.deleteMany({ assignedTo: id });
+    // Pull the deleted employee from all assigned tasks, and delete tasks that have no assignees left
+    await Task.updateMany({ assignedTo: id }, { $pull: { assignedTo: id } });
+    await Task.deleteMany({ assignedTo: { $size: 0 } });
+    
     await Attendance.deleteMany({ employeeId: id });
     await WorkUpload.deleteMany({ employeeId: id });
 

@@ -52,26 +52,45 @@ export async function GET(request: Request) {
       .populate('assignedTo', 'fullName department designation profileImage')
       .lean();
 
-    const tasks = tasksRaw.map((task) => ({
-      id: task._id,
-      title: task.title,
-      description: task.description,
-      assignedTo: task.assignedTo && typeof task.assignedTo === 'object' ? (task.assignedTo as any)._id : task.assignedTo,
-      assignedBy: task.assignedBy,
-      priority: task.priority,
-      deadline: task.deadline,
-      progress: task.progress,
-      status: task.status,
-      createdAt: task.createdAt,
-      updatedAt: task.updatedAt,
-      employee: task.assignedTo && typeof task.assignedTo === 'object' ? {
-        id: (task.assignedTo as any)._id,
-        fullName: (task.assignedTo as any).fullName,
-        department: (task.assignedTo as any).department,
-        designation: (task.assignedTo as any).designation,
-        profileImage: (task.assignedTo as any).profileImage,
-      } : null,
-    }));
+    const tasks = tasksRaw.map((task) => {
+      const isArray = Array.isArray(task.assignedTo);
+      const employees = isArray
+        ? task.assignedTo.map((emp: any) => typeof emp === 'object' && emp ? {
+            id: emp._id,
+            fullName: emp.fullName,
+            department: emp.department,
+            designation: emp.designation,
+            profileImage: emp.profileImage,
+          } : { id: emp })
+        : (task.assignedTo && typeof task.assignedTo === 'object' ? [{
+            id: (task.assignedTo as any)._id,
+            fullName: (task.assignedTo as any).fullName,
+            department: (task.assignedTo as any).department,
+            designation: (task.assignedTo as any).designation,
+            profileImage: (task.assignedTo as any).profileImage,
+          }] : []);
+
+      const firstEmployee = employees[0] || null;
+      const firstAssigneeId = isArray
+        ? (task.assignedTo[0] && typeof task.assignedTo[0] === 'object' ? (task.assignedTo[0] as any)._id : task.assignedTo[0])
+        : (task.assignedTo && typeof task.assignedTo === 'object' ? (task.assignedTo as any)._id : task.assignedTo);
+
+      return {
+        id: task._id,
+        title: task.title,
+        description: task.description,
+        assignedTo: firstAssigneeId || '',
+        assignedBy: task.assignedBy,
+        priority: task.priority,
+        deadline: task.deadline,
+        progress: task.progress,
+        status: task.status,
+        createdAt: task.createdAt,
+        updatedAt: task.updatedAt,
+        employee: firstEmployee,
+        employees,
+      };
+    });
 
     return NextResponse.json({
       tasks,
@@ -103,16 +122,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Title and assigned employee are required' }, { status: 400 });
     }
 
-    // Verify employee exists
-    const employee = await Employee.findById(assignedTo);
-    if (!employee) {
-      return NextResponse.json({ error: 'Assigned employee not found' }, { status: 404 });
+    const assigneeIds = Array.isArray(assignedTo) ? assignedTo : [assignedTo];
+    if (assigneeIds.length === 0) {
+      return NextResponse.json({ error: 'At least one assigned employee is required' }, { status: 400 });
+    }
+
+    // Verify employees exist
+    const employeesList = await Employee.find({ _id: { $in: assigneeIds } });
+    if (employeesList.length !== assigneeIds.length) {
+      return NextResponse.json({ error: 'One or more assigned employees not found' }, { status: 404 });
     }
 
     const newTask = await Task.create({
       title,
       description: description || null,
-      assignedTo,
+      assignedTo: assigneeIds,
       assignedBy: user.id,
       priority: priority || 'medium',
       deadline: deadline ? new Date(deadline) : null,
@@ -120,27 +144,39 @@ export async function POST(request: Request) {
       progress: 0,
     });
 
-    // Recalculate performance score
-    const tasks = await Task.find({ assignedTo }).select('progress').lean();
-    const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
-    await Employee.findByIdAndUpdate(assignedTo, { performanceScore: score });
+    // Recalculate performance score for all assigned employees
+    for (const empId of assigneeIds) {
+      const tasks = await Task.find({ assignedTo: empId }).select('progress').lean();
+      const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
+      await Employee.findByIdAndUpdate(empId, { performanceScore: score });
+    }
 
-    // Create notification for assigned employee
-    await Notification.create({
-      title: 'New Task Assigned',
-      message: `You have been assigned a new task: "${title}"`,
-      type: 'task',
-      userId: assignedTo,
-      userRole: 'employee',
-      relatedId: newTask._id,
-      isRead: false,
-    });
+    // Create notifications for all assigned employees
+    await Notification.insertMany(
+      assigneeIds.map((empId) => ({
+        title: 'New Task Assigned',
+        message: `You have been assigned a new task: "${title}"`,
+        type: 'task',
+        userId: empId,
+        userRole: 'employee',
+        relatedId: newTask._id,
+        isRead: false,
+      }))
+    );
+
+    const employeesResponse = employeesList.map((emp) => ({
+      id: emp._id,
+      fullName: emp.fullName,
+      department: emp.department,
+      designation: emp.designation,
+      profileImage: emp.profileImage,
+    }));
 
     const task = {
       id: newTask._id,
       title: newTask.title,
       description: newTask.description,
-      assignedTo: newTask.assignedTo,
+      assignedTo: assigneeIds[0] || '',
       assignedBy: newTask.assignedBy,
       priority: newTask.priority,
       deadline: newTask.deadline,
@@ -148,12 +184,8 @@ export async function POST(request: Request) {
       status: newTask.status,
       createdAt: newTask.createdAt,
       updatedAt: newTask.updatedAt,
-      employee: {
-        id: employee._id,
-        fullName: employee.fullName,
-        department: employee.department,
-        designation: employee.designation,
-      },
+      employee: employeesResponse[0] || null,
+      employees: employeesResponse,
     };
 
     return NextResponse.json({ task }, { status: 201 });

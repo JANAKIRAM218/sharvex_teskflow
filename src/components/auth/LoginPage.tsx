@@ -76,7 +76,7 @@ export default function LoginPage() {
       }
       login(data.user, data.token);
       setCurrentPage('dashboard');
-      toast.success(`Welcome, ${data.user.fullName}!`);
+      toast.success(`Welcome, ${data.user.name || data.user.fullName || 'Employee'}!`);
     } catch {
       toast.error('Network error. Please try again.');
     } finally {

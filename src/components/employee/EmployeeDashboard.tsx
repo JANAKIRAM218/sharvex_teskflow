@@ -240,6 +240,7 @@ export default function EmployeeDashboard() {
     return new Date(dateStr).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     });
   };
 
@@ -271,7 +272,7 @@ export default function EmployeeDashboard() {
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[#E5E7EB]">
-            Welcome back, <span className="text-[#00FFB2]">{user?.name || 'Employee'}</span>
+            Welcome back, <span className="text-[#00FFB2]">{user?.name || user?.fullName || 'Employee'}</span>
           </h1>
           <p className="text-[#94A3B8] mt-1">Here&apos;s your work overview for today</p>
         </div>
@@ -513,7 +514,7 @@ export default function EmployeeDashboard() {
                     <div className="text-right">
                       <p className="text-xs text-[#94A3B8]">Deadline</p>
                       <p className="text-xs text-[#E5E7EB] font-mono">
-                        {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                       </p>
                     </div>
                   )}

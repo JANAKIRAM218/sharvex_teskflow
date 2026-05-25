@@ -15,6 +15,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -51,6 +52,7 @@ interface Task {
   createdAt: string;
   updatedAt: string;
   employee: TaskEmployee;
+  employees?: TaskEmployee[];
   comments?: Array<{ id: string; content: string; createdAt: string; authorName: string }>;
   attachments?: Array<{ id: string; fileName: string; fileUrl: string; fileType: string; createdAt: string }>;
 }
@@ -130,15 +132,27 @@ function SortableTaskCard({
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center text-[#0B0F19] text-[8px] font-bold">
-              {task.employee.fullName.charAt(0)}
+            <div className="flex -space-x-1.5 overflow-hidden">
+              {(task.employees && task.employees.length > 0 ? task.employees : [task.employee]).slice(0, 3).map((emp, i) => (
+                <div
+                  key={emp?.id || i}
+                  className="w-5 h-5 rounded-md bg-gradient-to-br from-[#00FFB2] to-[#00E5FF] flex items-center justify-center text-[#0B0F19] text-[8px] font-bold border border-[#0B0F19]"
+                  title={emp?.fullName}
+                >
+                  {emp?.fullName?.charAt(0) || '?'}
+                </div>
+              ))}
             </div>
-            <span className="text-[10px] text-[#94A3B8]">{task.employee.fullName}</span>
+            <span className="text-[10px] text-[#94A3B8] truncate max-w-[120px]">
+              {task.employees && task.employees.length > 0
+                ? task.employees.map((e) => e.fullName).join(', ')
+                : task.employee?.fullName || 'Unassigned'}
+            </span>
           </div>
           {task.deadline && (
             <span className="text-[10px] text-[#94A3B8] flex items-center gap-1">
               <CalendarIcon className="w-3 h-3" />
-              {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
             </span>
           )}
         </div>
@@ -166,7 +180,7 @@ export default function TaskManagement() {
   const [createForm, setCreateForm] = useState({
     title: '',
     description: '',
-    assignedTo: '',
+    assignedTo: [] as string[],
     priority: 'medium',
     deadline: '',
   });
@@ -177,6 +191,12 @@ export default function TaskManagement() {
   // Detail modal state
   const [detailProgress, setDetailProgress] = useState(0);
   const [detailStatus, setDetailStatus] = useState('');
+  const [detailTitle, setDetailTitle] = useState('');
+  const [detailDescription, setDetailDescription] = useState('');
+  const [detailPriority, setDetailPriority] = useState('medium');
+  const [detailDeadline, setDetailDeadline] = useState<Date | undefined>(undefined);
+  const [detailDeadlineTime, setDetailDeadlineTime] = useState('18:00');
+  const [detailAssignedTo, setDetailAssignedTo] = useState<string[]>([]);
   const [updateLoading, setUpdateLoading] = useState(false);
 
   const formatJoinDate = (date: Date | undefined) => {
@@ -310,7 +330,7 @@ export default function TaskManagement() {
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.title || !createForm.assignedTo) {
+    if (!createForm.title || createForm.assignedTo.length === 0) {
       toast.error('Title and assignee are required');
       return;
     }
@@ -335,7 +355,7 @@ export default function TaskManagement() {
       }
       toast.success('Task created successfully!');
       setShowCreateModal(false);
-      setCreateForm({ title: '', description: '', assignedTo: '', priority: 'medium', deadline: '' });
+      setCreateForm({ title: '', description: '', assignedTo: [], priority: 'medium', deadline: '' });
       setCreateDeadline(undefined);
       fetchTasks();
     } catch {
@@ -349,6 +369,25 @@ export default function TaskManagement() {
     setSelectedTask(task);
     setDetailProgress(task.progress);
     setDetailStatus(task.status);
+    setDetailTitle(task.title);
+    setDetailDescription(task.description || '');
+    setDetailPriority(task.priority);
+    
+    const dlDate = task.deadline ? new Date(task.deadline) : undefined;
+    setDetailDeadline(dlDate);
+    if (dlDate) {
+      const hours = String(dlDate.getHours()).padStart(2, '0');
+      const minutes = String(dlDate.getMinutes()).padStart(2, '0');
+      setDetailDeadlineTime(`${hours}:${minutes}`);
+    } else {
+      setDetailDeadlineTime('18:00');
+    }
+    
+    const initialAssignees = task.employees
+      ? task.employees.map((emp) => emp.id)
+      : (task.assignedTo ? [task.assignedTo] : []);
+    setDetailAssignedTo(initialAssignees);
+    
     setShowDetailModal(true);
 
     // Fetch full task details
@@ -361,6 +400,22 @@ export default function TaskManagement() {
         setSelectedTask(data.task);
         setDetailProgress(data.task.progress);
         setDetailStatus(data.task.status);
+        setDetailTitle(data.task.title);
+        setDetailDescription(data.task.description || '');
+        setDetailPriority(data.task.priority);
+        
+        const fullDlDate = data.task.deadline ? new Date(data.task.deadline) : undefined;
+        setDetailDeadline(fullDlDate);
+        if (fullDlDate) {
+          const hours = String(fullDlDate.getHours()).padStart(2, '0');
+          const minutes = String(fullDlDate.getMinutes()).padStart(2, '0');
+          setDetailDeadlineTime(`${hours}:${minutes}`);
+        }
+        
+        const loadedAssignees = data.task.employees
+          ? data.task.employees.map((emp: any) => emp.id)
+          : (data.task.assignedTo ? [data.task.assignedTo] : []);
+        setDetailAssignedTo(loadedAssignees);
       }
     } catch {
       // use the list data
@@ -369,19 +424,44 @@ export default function TaskManagement() {
 
   const handleUpdateTask = async () => {
     if (!selectedTask) return;
+    if (!detailTitle.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+    if (detailAssignedTo.length === 0) {
+      toast.error('At least one assignee is required');
+      return;
+    }
     setUpdateLoading(true);
     try {
+      let deadline = '';
+      if (detailDeadline) {
+        const deadlineDate = new Date(detailDeadline);
+        const [hours, minutes] = (detailDeadlineTime || '18:00').split(':').map(Number);
+        deadlineDate.setHours(hours, minutes, 0, 0);
+        deadline = deadlineDate.toISOString();
+      }
+      
       const res = await fetch(`/api/tasks/${selectedTask.id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ progress: detailProgress, status: detailStatus }),
+        body: JSON.stringify({
+          title: detailTitle,
+          description: detailDescription,
+          progress: detailProgress,
+          status: detailStatus,
+          priority: detailPriority,
+          deadline: deadline || null,
+          assignedTo: detailAssignedTo,
+        }),
       });
       if (res.ok) {
         toast.success('Task updated!');
         fetchTasks();
         setShowDetailModal(false);
       } else {
-        toast.error('Failed to update task');
+        const data = await res.json();
+        toast.error(data.error || 'Failed to update task');
       }
     } catch {
       toast.error('Failed to update task');
@@ -588,20 +668,75 @@ export default function TaskManagement() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[#94A3B8]">Assign To *</label>
-                  <Select
-                    value={createForm.assignedTo || '__none__'}
-                    onValueChange={(val) => setCreateForm({ ...createForm, assignedTo: val === '__none__' ? '' : val })}
-                  >
-                    <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
-                      <SelectValue placeholder="Select employee" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
-                      <SelectItem value="__none__" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Select employee</SelectItem>
-                      {employees.map((emp) => (
-                        <SelectItem key={emp.id} value={emp.id} className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">{emp.fullName} - {emp.department}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="w-full justify-start text-left font-normal rounded-xl bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
+                      >
+                        <User className="mr-2 h-4 w-4 text-[#00FFB2]" />
+                        {createForm.assignedTo.length > 0
+                          ? `${createForm.assignedTo.length} employee(s) selected`
+                          : 'Select employees'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-2 bg-[#111827] border-[rgba(255,255,255,0.08)]" align="start">
+                      <div className="max-h-60 overflow-y-auto space-y-1">
+                        {employees.map((emp) => {
+                          const isSelected = createForm.assignedTo.includes(emp.id);
+                          return (
+                            <div
+                              key={emp.id}
+                              className="flex items-center space-x-2 p-2 hover:bg-[rgba(255,255,255,0.05)] rounded-lg cursor-pointer"
+                              onClick={() => {
+                                const newSelection = isSelected
+                                  ? createForm.assignedTo.filter((id) => id !== emp.id)
+                                  : [...createForm.assignedTo, emp.id];
+                                setCreateForm({ ...createForm, assignedTo: newSelection });
+                              }}
+                            >
+                              <Checkbox checked={isSelected} onCheckedChange={() => {}} />
+                              <div className="flex-1 text-sm text-[#E5E7EB]">
+                                <p className="font-medium">{emp.fullName}</p>
+                                <p className="text-[10px] text-[#94A3B8]">{emp.department}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
+                  {createForm.assignedTo.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {createForm.assignedTo.map((id) => {
+                        const emp = employees.find((e) => e.id === id);
+                        if (!emp) return null;
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs bg-[rgba(0,255,178,0.1)] text-[#00FFB2] border border-[rgba(0,255,178,0.2)]"
+                          >
+                            {emp.fullName}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setCreateForm({
+                                  ...createForm,
+                                  assignedTo: createForm.assignedTo.filter((x) => x !== id),
+                                });
+                              }}
+                              className="ml-1 text-[#00FFB2] hover:text-white"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
@@ -683,44 +818,160 @@ export default function TaskManagement() {
               className="glass-card p-6 rounded-2xl w-full max-w-lg neon-border max-h-[85vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start justify-between mb-4">
-                <h3 className="text-lg font-semibold text-[#E5E7EB] pr-4">{selectedTask.title}</h3>
-                <button onClick={() => setShowDetailModal(false)} className="text-[#94A3B8] hover:text-[#E5E7EB] shrink-0">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-[#E5E7EB]">Edit Task Details</h3>
+                <button onClick={() => setShowDetailModal(false)} className="text-[#94A3B8] hover:text-[#E5E7EB]">
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {selectedTask.description && (
-                <p className="text-sm text-[#94A3B8] mb-4">{selectedTask.description}</p>
-              )}
+              <div className="space-y-4 mb-6">
+                {/* Title */}
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#94A3B8] font-medium">Title *</label>
+                  <input
+                    type="text"
+                    value={detailTitle}
+                    onChange={(e) => setDetailTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                  />
+                </div>
 
-              {/* Task Meta */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="w-4 h-4 text-[#00FFB2]" />
-                  <span className="text-[#94A3B8]">Assignee:</span>
-                  <span className="text-[#E5E7EB]">{selectedTask.employee.fullName}</span>
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#94A3B8] font-medium">Description</label>
+                  <textarea
+                    value={detailDescription}
+                    onChange={(e) => setDetailDescription(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none resize-none"
+                  />
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${priorityColor(selectedTask.priority)}`}>
-                    {selectedTask.priority}
-                  </span>
-                </div>
-                {selectedTask.deadline && (
-                  <div className="flex items-center gap-2 text-sm col-span-2">
-                    <CalendarIcon className="w-4 h-4 text-[#00E5FF]" />
-                    <span className="text-[#94A3B8]">Deadline:</span>
-                    <span className="text-[#E5E7EB]">
-                      {new Date(selectedTask.deadline).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
+
+                {/* Assignees Popover */}
+                <div className="space-y-1.5">
+                  <label className="text-xs text-[#94A3B8] font-medium">Assignees *</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        className="w-full justify-start text-left font-normal rounded-xl bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] text-[#E5E7EB]"
+                      >
+                        <User className="mr-2 h-4 w-4 text-[#00FFB2]" />
+                        {detailAssignedTo.length > 0
+                          ? `${detailAssignedTo.length} employee(s) selected`
+                          : 'Select assignees'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-2 bg-[#111827] border-[rgba(255,255,255,0.08)]" align="start">
+                      <div className="max-h-60 overflow-y-auto space-y-1">
+                        {employees.map((emp) => {
+                          const isSelected = detailAssignedTo.includes(emp.id);
+                          return (
+                            <div
+                              key={emp.id}
+                              className="flex items-center space-x-2 p-2 hover:bg-[rgba(255,255,255,0.05)] rounded-lg cursor-pointer"
+                              onClick={() => {
+                                const newSelection = isSelected
+                                  ? detailAssignedTo.filter((id) => id !== emp.id)
+                                  : [...detailAssignedTo, emp.id];
+                                setDetailAssignedTo(newSelection);
+                              }}
+                            >
+                              <Checkbox checked={isSelected} onCheckedChange={() => {}} />
+                              <div className="flex-1 text-sm text-[#E5E7EB]">
+                                <p className="font-medium">{emp.fullName}</p>
+                                <p className="text-[10px] text-[#94A3B8]">{emp.department}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Selected badges */}
+                  {detailAssignedTo.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {detailAssignedTo.map((id) => {
+                        const emp = employees.find((e) => e.id === id);
+                        if (!emp) return null;
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs bg-[rgba(0,255,178,0.1)] text-[#00FFB2] border border-[rgba(0,255,178,0.2)]"
+                          >
+                            {emp.fullName}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDetailAssignedTo(detailAssignedTo.filter((x) => x !== id));
+                              }}
+                              className="ml-1 text-[#00FFB2] hover:text-white"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        );
                       })}
-                    </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Priority */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-[#94A3B8] font-medium">Priority</label>
+                    <Select value={detailPriority} onValueChange={setDetailPriority}>
+                      <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
+                        <SelectValue placeholder="Priority" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                        <SelectItem value="low" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Low</SelectItem>
+                        <SelectItem value="medium" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">Medium</SelectItem>
+                        <SelectItem value="high" className="text-[#E5E7EB] focus:text-[#E5E7EB] focus:bg-[rgba(255,255,255,0.05)] cursor-pointer">High</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
+
+                  {/* Deadline Date */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-[#94A3B8] font-medium">Deadline Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          type="button"
+                          className={`w-full justify-start text-left font-normal rounded-xl bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.08)] ${!detailDeadline ? 'text-[#94A3B8]' : 'text-[#E5E7EB]'}`}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formatJoinDate(detailDeadline)}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-[#111827] border-[rgba(255,255,255,0.08)]">
+                        <Calendar
+                          mode="single"
+                          selected={detailDeadline}
+                          onSelect={setDetailDeadline}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Deadline Time */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs text-[#94A3B8] font-medium">Deadline Time</label>
+                    <input
+                      type="time"
+                      value={detailDeadlineTime}
+                      onChange={(e) => setDetailDeadlineTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Status & Progress Controls */}

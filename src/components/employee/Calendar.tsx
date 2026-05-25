@@ -342,7 +342,7 @@ export default function EmployeeCalendar() {
                         {task.deadline && (
                           <span className="text-xs text-[#94A3B8] flex items-center gap-1">
                             <Clock className="size-3 text-[#00E5FF]" />
-                            {new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
                           </span>
                         )}
                       </div>

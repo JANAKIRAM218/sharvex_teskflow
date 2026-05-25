@@ -31,18 +31,21 @@ export async function POST() {
     const sampleEmployees = [
       {
         fullName: 'Jashwanth Kumar',
+        username: 'jashwa55',
         department: 'Engineering',
         designation: 'Senior Developer',
         performanceScore: 85,
       },
       {
         fullName: 'Hemanth Reddy',
+        username: 'hemant75',
         department: 'Design',
         designation: 'UI/UX Designer',
         performanceScore: 78,
       },
       {
         fullName: 'Janakiram Sharma',
+        username: 'janaki87',
         department: 'Marketing',
         designation: 'Marketing Manager',
         performanceScore: 92,
@@ -54,7 +57,7 @@ export async function POST() {
     const createdEmployees = [];
     for (let i = 0; i < sampleEmployees.length; i++) {
       const emp = sampleEmployees[i];
-      const username = generateUsername(emp.fullName);
+      const username = emp.username || generateUsername(emp.fullName);
       const employeeCode = generateEmployeeCode(i);
       const defaultPassword = demoPasswords[i] || generateDefaultPassword();
       const hashedPassword = await hashPassword(defaultPassword);
@@ -85,7 +88,7 @@ export async function POST() {
       {
         title: 'Implement User Authentication',
         description: 'Build login and registration flow with JWT tokens',
-        assignedTo: createdEmployees[0].id,
+        assignedTo: [createdEmployees[0].id],
         assignedBy: admin._id,
         priority: 'high',
         status: 'in-progress',
@@ -95,7 +98,7 @@ export async function POST() {
       {
         title: 'Design Dashboard Layout',
         description: 'Create responsive dashboard wireframes and mockups',
-        assignedTo: createdEmployees[1].id,
+        assignedTo: [createdEmployees[1].id],
         assignedBy: admin._id,
         priority: 'medium',
         status: 'pending',
@@ -105,7 +108,7 @@ export async function POST() {
       {
         title: 'Prepare Marketing Campaign',
         description: 'Plan Q2 marketing campaign strategy and content calendar',
-        assignedTo: createdEmployees[2].id,
+        assignedTo: [createdEmployees[2].id],
         assignedBy: admin._id,
         priority: 'high',
         status: 'completed',
@@ -115,7 +118,7 @@ export async function POST() {
       {
         title: 'Code Review - API Module',
         description: 'Review and provide feedback on the API module pull request',
-        assignedTo: createdEmployees[0].id,
+        assignedTo: [createdEmployees[0].id],
         assignedBy: admin._id,
         priority: 'low',
         status: 'pending',
@@ -125,7 +128,7 @@ export async function POST() {
       {
         title: 'Update Brand Guidelines',
         description: 'Revise brand guidelines document with new color palette and typography',
-        assignedTo: createdEmployees[1].id,
+        assignedTo: [createdEmployees[1].id],
         assignedBy: admin._id,
         priority: 'medium',
         status: 'in-progress',
@@ -135,7 +138,7 @@ export async function POST() {
       {
         title: 'Social Media Analytics Report',
         description: 'Compile monthly social media performance analytics report',
-        assignedTo: createdEmployees[2].id,
+        assignedTo: [createdEmployees[2].id],
         assignedBy: admin._id,
         priority: 'low',
         status: 'in-progress',

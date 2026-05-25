@@ -56,6 +56,12 @@ interface Task {
     department: string;
     designation: string;
   };
+  employees?: Array<{
+    id: string;
+    fullName: string;
+    department: string;
+    designation: string;
+  }>;
   comments?: Comment[];
   attachments?: Attachment[];
 }
@@ -381,8 +387,8 @@ export default function MyTasks() {
                             {isOverdue 
                               ? `${Math.abs(daysLeft!)}d overdue` 
                               : isUrgent 
-                                ? `${daysLeft}d left (${new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })})` 
-                                : new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                              ? `${daysLeft}d left (${new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })})` 
+                              : new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
                             }
                           </span>
                         )}
@@ -435,7 +441,7 @@ export default function MyTasks() {
                     <p className="text-xs text-[#94A3B8] mb-1">Deadline</p>
                     <p className="text-sm text-[#E5E7EB]">
                       {selectedTask.deadline 
-                        ? new Date(selectedTask.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                        ? new Date(selectedTask.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) 
                         : 'No deadline'}
                     </p>
                   </div>
@@ -450,6 +456,24 @@ export default function MyTasks() {
                     <p className="text-sm text-[#E5E7EB]">{selectedTask.employee?.department || '-'}</p>
                   </div>
                 </div>
+
+                {/* Co-assignees/Assigned Team */}
+                {selectedTask.employees && selectedTask.employees.length > 0 && (
+                  <div className="p-3.5 rounded-xl border border-[rgba(255,255,255,0.05)]" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <p className="text-xs text-[#94A3B8] mb-2 font-medium">Assigned Team Members</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedTask.employees.map((emp) => (
+                        <span
+                          key={emp.id}
+                          className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-[rgba(255,255,255,0.05)] text-[#E5E7EB] border border-[rgba(255,255,255,0.08)]"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00FFB2] mr-2 shrink-0" />
+                          {emp.fullName} ({emp.department})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Progress Slider */}
                 <div className="p-4 rounded-xl" style={{ background: 'rgba(0, 255, 178, 0.03)', border: '1px solid rgba(0, 255, 178, 0.1)' }}>

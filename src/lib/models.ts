@@ -38,7 +38,7 @@ const TaskSchema = new Schema(
     _id: { type: String, default: generateId },
     title: { type: String, required: true },
     description: { type: String, default: null },
-    assignedTo: { type: String, ref: 'Employee', required: true },
+    assignedTo: [{ type: String, ref: 'Employee', required: true }],
     assignedBy: { type: String, required: true },
     priority: { type: String, default: 'medium' },
     deadline: { type: Date, default: null },

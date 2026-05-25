@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       if (!employee) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
-      return NextResponse.json({ user: { id: employee._id, fullName: employee.fullName, username: employee.username, employeeCode: employee.employeeCode, department: employee.department, designation: employee.designation, profileImage: employee.profileImage, performanceScore: employee.performanceScore, status: employee.status, joiningDate: employee.joiningDate, createdAt: employee.createdAt, role: 'employee' } });
+      return NextResponse.json({ user: { id: employee._id, name: employee.fullName, fullName: employee.fullName, username: employee.username, employeeCode: employee.employeeCode, department: employee.department, designation: employee.designation, profileImage: employee.profileImage, performanceScore: employee.performanceScore, status: employee.status, joiningDate: employee.joiningDate, createdAt: employee.createdAt, role: 'employee' } });
     }
 
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
