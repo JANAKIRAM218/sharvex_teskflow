@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "TaskFlow - Employee Task Management Platform",
   description: "A futuristic AI-powered Employee Task Management Platform with real-time tracking, analytics, and team collaboration.",
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.png",
   },
 };
 
