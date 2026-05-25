@@ -63,10 +63,17 @@ export default function EmployeeCalendar() {
     fetchTasks();
   }, [fetchTasks]);
 
+  const toLocalYYYYMMDD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Group tasks by deadline date
   const tasksByDate = tasks.reduce<Record<string, Task[]>>((acc, task) => {
     if (task.deadline) {
-      const dateKey = new Date(task.deadline).toISOString().split('T')[0];
+      const dateKey = toLocalYYYYMMDD(new Date(task.deadline));
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(task);
     }
@@ -75,19 +82,19 @@ export default function EmployeeCalendar() {
 
   // Get tasks for selected date
   const selectedDateKey = selectedDate
-    ? selectedDate.toISOString().split('T')[0]
+    ? toLocalYYYYMMDD(selectedDate)
     : '';
   const selectedDateTasks = selectedDateKey ? (tasksByDate[selectedDateKey] || []) : [];
 
   // Check if a date has tasks
   const hasTasks = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalYYYYMMDD(date);
     return !!tasksByDate[dateKey]?.length;
   };
 
   // Get task count for a date
   const getTaskCount = (date: Date) => {
-    const dateKey = date.toISOString().split('T')[0];
+    const dateKey = toLocalYYYYMMDD(date);
     return tasksByDate[dateKey]?.length || 0;
   };
 
@@ -330,6 +337,12 @@ export default function EmployeeCalendar() {
                           <span className="flex items-center gap-1 text-xs text-yellow-400">
                             <Clock className="size-3" />
                             {daysLeft}d left
+                          </span>
+                        )}
+                        {task.deadline && (
+                          <span className="text-xs text-[#94A3B8] flex items-center gap-1">
+                            <Clock className="size-3 text-[#00E5FF]" />
+                            {new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
                       </div>

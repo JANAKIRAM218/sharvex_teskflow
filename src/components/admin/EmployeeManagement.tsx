@@ -170,7 +170,13 @@ export default function EmployeeManagement() {
     }
     setAddLoading(true);
     try {
-      const joiningDate = addJoinDate ? addJoinDate.toISOString().split('T')[0] : '';
+      let joiningDate = '';
+      if (addJoinDate) {
+        const year = addJoinDate.getFullYear();
+        const month = String(addJoinDate.getMonth() + 1).padStart(2, '0');
+        const day = String(addJoinDate.getDate()).padStart(2, '0');
+        joiningDate = `${year}-${month}-${day}`;
+      }
       const res = await fetch('/api/employees', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

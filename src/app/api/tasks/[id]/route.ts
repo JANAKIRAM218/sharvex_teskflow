@@ -115,14 +115,25 @@ export async function PUT(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
+      const finalStatus = status !== undefined ? status : existing.status;
+      const finalProgress = finalStatus === 'completed' ? 100 : (progress !== undefined ? progress : existing.progress);
+
       const updatedTask = await Task.findByIdAndUpdate(
         id,
         {
-          ...(progress !== undefined && { progress }),
+          progress: finalProgress,
           ...(status !== undefined && { status }),
         },
         { new: true }
       ).populate('assignedTo', 'fullName department designation profileImage').lean();
+
+      // Recalculate performance score
+      if (updatedTask && updatedTask.assignedTo) {
+        const empId = typeof updatedTask.assignedTo === 'object' ? (updatedTask.assignedTo as any)._id : updatedTask.assignedTo;
+        const tasks = await Task.find({ assignedTo: empId }).select('progress').lean();
+        const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
+        await Employee.findByIdAndUpdate(empId, { performanceScore: score });
+      }
 
       const employeeObj = await Employee.findById(existing.assignedTo).select('fullName').lean();
 
@@ -161,6 +172,9 @@ export async function PUT(
     }
 
     // Admin can update all fields
+    const finalStatus = status !== undefined ? status : existing.status;
+    const finalProgress = finalStatus === 'completed' ? 100 : (progress !== undefined ? progress : existing.progress);
+
     const updatedTask = await Task.findByIdAndUpdate(
       id,
       {
@@ -168,11 +182,19 @@ export async function PUT(
         ...(description !== undefined && { description }),
         ...(priority !== undefined && { priority }),
         ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null }),
-        ...(progress !== undefined && { progress }),
+        progress: finalProgress,
         ...(status !== undefined && { status }),
       },
       { new: true }
     ).populate('assignedTo', 'fullName department designation profileImage').lean();
+
+    // Recalculate performance score
+    if (updatedTask && updatedTask.assignedTo) {
+      const empId = typeof updatedTask.assignedTo === 'object' ? (updatedTask.assignedTo as any)._id : updatedTask.assignedTo;
+      const tasks = await Task.find({ assignedTo: empId }).select('progress').lean();
+      const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
+      await Employee.findByIdAndUpdate(empId, { performanceScore: score });
+    }
 
     // Notify employee if task details changed
     if (title !== undefined || priority !== undefined || deadline !== undefined || status !== undefined) {
@@ -238,6 +260,13 @@ export async function DELETE(
     }
 
     await Task.findByIdAndDelete(id);
+
+    // Recalculate performance score for the employee
+    if (existing.assignedTo) {
+      const tasks = await Task.find({ assignedTo: existing.assignedTo }).select('progress').lean();
+      const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
+      await Employee.findByIdAndUpdate(existing.assignedTo, { performanceScore: score });
+    }
 
     // Replicate Prisma Cascade Deletes
     await Comment.deleteMany({ taskId: id });

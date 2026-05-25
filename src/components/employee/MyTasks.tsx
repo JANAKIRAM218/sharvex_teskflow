@@ -378,7 +378,12 @@ export default function MyTasks() {
                         {task.deadline && (
                           <span className={`flex items-center gap-1 text-xs ${isOverdue ? 'text-red-400' : isUrgent ? 'text-yellow-400' : 'text-[#94A3B8]'}`}>
                             {isOverdue ? <AlertTriangle className="size-3" /> : <Calendar className="size-3" />}
-                            {isOverdue ? `${Math.abs(daysLeft!)}d overdue` : isUrgent ? `${daysLeft}d left` : new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            {isOverdue 
+                              ? `${Math.abs(daysLeft!)}d overdue` 
+                              : isUrgent 
+                                ? `${daysLeft}d left (${new Date(task.deadline).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })})` 
+                                : new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            }
                           </span>
                         )}
                       </div>
@@ -429,7 +434,9 @@ export default function MyTasks() {
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
                     <p className="text-xs text-[#94A3B8] mb-1">Deadline</p>
                     <p className="text-sm text-[#E5E7EB]">
-                      {selectedTask.deadline ? new Date(selectedTask.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No deadline'}
+                      {selectedTask.deadline 
+                        ? new Date(selectedTask.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                        : 'No deadline'}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
@@ -464,7 +471,12 @@ export default function MyTasks() {
                 {/* Status Change */}
                 <div className="flex items-center gap-4">
                   <p className="text-sm font-medium text-[#E5E7EB]">Status:</p>
-                  <Select value={statusValue} onValueChange={setStatusValue}>
+                  <Select value={statusValue} onValueChange={(val) => {
+                    setStatusValue(val);
+                    if (val === 'completed') {
+                      setProgressValue(100);
+                    }
+                  }}>
                     <SelectTrigger className="w-44 bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)]">
                       <SelectValue />
                     </SelectTrigger>

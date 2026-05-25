@@ -120,6 +120,11 @@ export async function POST(request: Request) {
       progress: 0,
     });
 
+    // Recalculate performance score
+    const tasks = await Task.find({ assignedTo }).select('progress').lean();
+    const score = tasks.length > 0 ? Math.round(tasks.reduce((sum, t) => sum + (t.progress || 0), 0) / tasks.length) : 0;
+    await Employee.findByIdAndUpdate(assignedTo, { performanceScore: score });
+
     // Create notification for assigned employee
     await Notification.create({
       title: 'New Task Assigned',

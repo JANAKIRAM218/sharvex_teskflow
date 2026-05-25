@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, CheckSquare, BarChart3,
   Bell, Settings, LogOut, Zap, Menu, X, ChevronRight,
-  ListTodo, Calendar, UserCircle, HomeIcon, Search, MessageCircle
+  ListTodo, Calendar, UserCircle, HomeIcon, Search
 } from 'lucide-react';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
@@ -19,6 +19,7 @@ import TaskManagement from '@/components/admin/TaskManagement';
 import Analytics from '@/components/admin/Analytics';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminSettings from '@/components/admin/AdminSettings';
+import Attendance from '@/components/admin/Attendance';
 
 // Employee pages
 import EmployeeDashboard from '@/components/employee/EmployeeDashboard';
@@ -27,11 +28,8 @@ import CalendarPage from '@/components/employee/Calendar';
 import EmployeeNotifications from '@/components/employee/EmployeeNotifications';
 import Profile from '@/components/employee/Profile';
 import EmployeeSettings from '@/components/employee/EmployeeSettings';
-import WorkUploads from '@/components/employee/WorkUploads';
-import TeamChat from '@/components/shared/TeamChat';
-
-type AdminPage = 'dashboard' | 'employees' | 'tasks' | 'analytics' | 'notifications' | 'settings';
-type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings' | 'work-uploads';
+type AdminPage = 'dashboard' | 'employees' | 'tasks' | 'analytics' | 'notifications' | 'settings' | 'attendance';
+type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings';
 
 const ADMIN_NAV: { id: AdminPage; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -39,7 +37,7 @@ const ADMIN_NAV: { id: AdminPage; label: string; icon: React.ComponentType<{ cla
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'work-uploads', label: 'Work Uploads', icon: Zap },
+  { id: 'attendance', label: 'Attendance', icon: Calendar },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -47,8 +45,6 @@ const EMPLOYEE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'my-tasks', label: 'My Tasks', icon: ListTodo },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'chat', label: 'Team Chat', icon: MessageCircle },
-  { id: 'work-uploads', label: 'Work Uploads', icon: Zap },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'profile', label: 'Profile', icon: UserCircle },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -58,7 +54,6 @@ const EMPLOYEE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType
 const EMPLOYEE_MOBILE_NAV: { id: EmployeePage; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'dashboard', label: 'Home', icon: HomeIcon },
   { id: 'my-tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'work-uploads', label: 'Uploads', icon: Zap },
   { id: 'notifications', label: 'Alerts', icon: Bell },
   { id: 'profile', label: 'Profile', icon: UserCircle },
 ];
@@ -309,8 +304,8 @@ function AdminPortal() {
     case 'tasks': return <TaskManagement />;
     case 'analytics': return <Analytics />;
     case 'notifications': return <AdminNotifications />;
+    case 'attendance': return <Attendance />;
     case 'settings': return <AdminSettings />;
-    case 'work-uploads': return <WorkUploads />;
     default: return <AdminDashboard />;
   }
 }
@@ -325,8 +320,6 @@ function EmployeePortal() {
     case 'notifications': return <EmployeeNotifications />;
     case 'profile': return <Profile />;
     case 'settings': return <EmployeeSettings />;
-    case 'work-uploads': return <WorkUploads />;
-    case 'chat': return <TeamChat />;
     default: return <EmployeeDashboard />;
   }
 }
@@ -371,8 +364,8 @@ export default function Home() {
   // Set initial page based on role
   useEffect(() => {
     if (isAuthenticated && user) {
-      const validAdminPages = ['dashboard', 'employees', 'tasks', 'analytics', 'notifications', 'settings', 'work-uploads'];
-      const validEmployeePages = ['dashboard', 'my-tasks', 'calendar', 'notifications', 'profile', 'settings', 'work-uploads', 'chat'];
+      const validAdminPages = ['dashboard', 'employees', 'tasks', 'analytics', 'notifications', 'settings', 'attendance'];
+      const validEmployeePages = ['dashboard', 'my-tasks', 'calendar', 'notifications', 'profile', 'settings'];
       const current = useAppStore.getState().currentPage;
       const validPages = user.role === 'admin' ? validAdminPages : validEmployeePages;
       if (!validPages.includes(current)) {

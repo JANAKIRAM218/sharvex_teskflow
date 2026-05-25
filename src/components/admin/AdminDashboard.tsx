@@ -13,7 +13,6 @@ import {
 } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import AIInsightsPanel from '@/components/admin/AIInsightsPanel';
-import TeamChat from '@/components/shared/TeamChat';
 
 interface AnalyticsData {
   totalEmployees: number;
@@ -297,10 +296,6 @@ export default function AdminDashboard() {
         </motion.div>
       </div>
 
-      {/* Team Chat Section */}
-      <motion.div variants={itemVariants}>
-        <TeamChat />
-      </motion.div>
     </motion.div>
   );
 }

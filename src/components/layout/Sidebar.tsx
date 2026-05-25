@@ -14,7 +14,6 @@ import {
   LogOut,
   ChevronLeft,
   Zap,
-  MessageCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useAppStore } from '@/store/appStore';
@@ -34,7 +33,7 @@ const adminNavItems: NavItem[] = [
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'work-uploads', label: 'Work Uploads', icon: Zap },
+  { id: 'attendance', label: 'Attendance', icon: Calendar },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -42,7 +41,6 @@ const employeeNavItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'my-tasks', label: 'My Tasks', icon: ListTodo },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'chat', label: 'Team Chat', icon: MessageCircle },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'profile', label: 'Profile', icon: UserCircle },
   { id: 'settings', label: 'Settings', icon: Settings },

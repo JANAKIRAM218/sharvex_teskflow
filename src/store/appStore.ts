@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-type AdminPage = 'dashboard' | 'employees' | 'tasks' | 'analytics' | 'notifications' | 'settings' | 'work-uploads';
-type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings' | 'work-uploads' | 'chat';
+type AdminPage = 'dashboard' | 'employees' | 'tasks' | 'analytics' | 'notifications' | 'settings' | 'attendance';
+type EmployeePage = 'dashboard' | 'my-tasks' | 'calendar' | 'notifications' | 'profile' | 'settings';
 
 interface AppState {
   currentPage: AdminPage | EmployeePage;

@@ -52,6 +52,22 @@ export async function GET(request: Request) {
       }
     }
 
+    // Recalculate performanceScore for all active employees to ensure accuracy
+    const activeEmployeesList = await Employee.find({ status: 'active' });
+    await Promise.all(
+      activeEmployeesList.map(async (emp) => {
+        const tasks = await Task.find({ assignedTo: emp._id }).select('progress').lean();
+        let score = 0;
+        if (tasks.length > 0) {
+          const sumProgress = tasks.reduce((sum, t) => sum + (t.progress || 0), 0);
+          score = Math.round(sumProgress / tasks.length);
+        }
+        if (emp.performanceScore !== score) {
+          await Employee.findByIdAndUpdate(emp._id, { performanceScore: score });
+        }
+      })
+    );
+
     // Employee performance rankings
     const activeEmployees = await Employee.find({ status: 'active' })
       .select('fullName department performanceScore profileImage')
@@ -98,8 +114,13 @@ export async function GET(request: Request) {
         },
       });
 
+      const year = startOfDay.getFullYear();
+      const month = String(startOfDay.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(startOfDay.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${dayStr}`;
+
       weeklyData.push({
-        date: startOfDay.toISOString().split('T')[0],
+        date: dateStr,
         day: startOfDay.toLocaleDateString('en-US', { weekday: 'short' }),
         completed,
         created,

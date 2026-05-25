@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Activity,
   Zap,
-  Upload,
 } from 'lucide-react';
 import {
   LineChart,
@@ -90,6 +89,12 @@ export default function EmployeeDashboard() {
     if (!token || !user?.id) return;
     try {
       setLoading(true);
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+
       const [tasksRes, analyticsRes, attendanceRes] = await Promise.all([
         fetch(`/api/tasks?assignedTo=${user.id}&limit=5`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -97,7 +102,7 @@ export default function EmployeeDashboard() {
         fetch('/api/analytics', {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`/api/attendance?date=${new Date().toISOString().split('T')[0]}`, {
+        fetch(`/api/attendance?date=${todayStr}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -507,8 +512,8 @@ export default function EmployeeDashboard() {
                   {task.deadline && (
                     <div className="text-right">
                       <p className="text-xs text-[#94A3B8]">Deadline</p>
-                      <p className="text-xs text-[#E5E7EB]">
-                        {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <p className="text-xs text-[#E5E7EB] font-mono">
+                        {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   )}
@@ -525,7 +530,7 @@ export default function EmployeeDashboard() {
           <Zap className="size-5 text-[#00E5FF]" />
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <button
             onClick={() => setCurrentPage('my-tasks')}
             className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
@@ -533,14 +538,6 @@ export default function EmployeeDashboard() {
           >
             <ListTodo className="size-6 text-[#00FFB2] mx-auto mb-2" />
             <p className="text-xs font-medium text-[#E5E7EB]">My Tasks</p>
-          </button>
-          <button
-            onClick={() => setCurrentPage('work-uploads')}
-            className="p-4 rounded-xl text-center transition-all hover:scale-[1.02] cursor-pointer"
-            style={{ background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)' }}
-          >
-            <Upload className="size-6 text-[#00E5FF] mx-auto mb-2" />
-            <p className="text-xs font-medium text-[#E5E7EB]">Upload Work</p>
           </button>
           <button
             onClick={() => setCurrentPage('calendar')}

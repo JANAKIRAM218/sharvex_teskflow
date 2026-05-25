@@ -138,7 +138,7 @@ function SortableTaskCard({
           {task.deadline && (
             <span className="text-[10px] text-[#94A3B8] flex items-center gap-1">
               <CalendarIcon className="w-3 h-3" />
-              {new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(task.deadline).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
@@ -172,6 +172,7 @@ export default function TaskManagement() {
   });
   const [createLoading, setCreateLoading] = useState(false);
   const [createDeadline, setCreateDeadline] = useState<Date | undefined>(undefined);
+  const [createTime, setCreateTime] = useState('18:00');
 
   // Detail modal state
   const [detailProgress, setDetailProgress] = useState(0);
@@ -279,14 +280,17 @@ export default function TaskManagement() {
 
     // Optimistic update
     setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus } : t))
+      prev.map((t) => (t.id === taskId ? { ...t, status: targetStatus, ...(targetStatus === 'completed' && { progress: 100 }) } : t))
     );
 
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: targetStatus }),
+        body: JSON.stringify({
+          status: targetStatus,
+          ...(targetStatus === 'completed' && { progress: 100 }),
+        }),
       });
       if (!res.ok) {
         setTasks((prev) =>
@@ -312,7 +316,13 @@ export default function TaskManagement() {
     }
     setCreateLoading(true);
     try {
-      const deadline = createDeadline ? createDeadline.toISOString().split('T')[0] : '';
+      let deadline = '';
+      if (createDeadline) {
+        const deadlineDate = new Date(createDeadline);
+        const [hours, minutes] = (createTime || '18:00').split(':').map(Number);
+        deadlineDate.setHours(hours, minutes, 0, 0);
+        deadline = deadlineDate.toISOString();
+      }
       const res = await fetch('/api/tasks', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -611,7 +621,7 @@ export default function TaskManagement() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm text-[#94A3B8]">Deadline</label>
+                    <label className="text-sm text-[#94A3B8]">Deadline Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -631,6 +641,15 @@ export default function TaskManagement() {
                         />
                       </PopoverContent>
                     </Popover>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-[#94A3B8]">Deadline Time</label>
+                    <input
+                      type="time"
+                      value={createTime}
+                      onChange={(e) => setCreateTime(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[#E5E7EB] text-sm focus:outline-none"
+                    />
                   </div>
                 </div>
                 <button
@@ -688,10 +707,18 @@ export default function TaskManagement() {
                   </span>
                 </div>
                 {selectedTask.deadline && (
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2 text-sm col-span-2">
                     <CalendarIcon className="w-4 h-4 text-[#00E5FF]" />
                     <span className="text-[#94A3B8]">Deadline:</span>
-                    <span className="text-[#E5E7EB]">{new Date(selectedTask.deadline).toLocaleDateString()}</span>
+                    <span className="text-[#E5E7EB]">
+                      {new Date(selectedTask.deadline).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
                 )}
               </div>
@@ -702,7 +729,12 @@ export default function TaskManagement() {
                   <label className="text-sm text-[#94A3B8]">Status</label>
                   <Select
                     value={detailStatus}
-                    onValueChange={setDetailStatus}
+                    onValueChange={(val) => {
+                      setDetailStatus(val);
+                      if (val === 'completed') {
+                        setDetailProgress(100);
+                      }
+                    }}
                   >
                     <SelectTrigger className="w-full bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.08)] text-[#E5E7EB]">
                       <SelectValue placeholder="Status" />
